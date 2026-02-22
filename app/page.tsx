@@ -1,65 +1,235 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import HeroSection from "@/components/HeroSection";
+import InputForm from "@/components/InputForm";
+import ResultCard from "@/components/ResultCard";
+import TrafficCurve from "@/components/TrafficCurve";
+import AIComment from "@/components/AIComment";
+import CO2Section from "@/components/CO2Section";
+import CollectiveImpact from "@/components/CollectiveImpact";
+import { calculateStressData, generateDepartureTimes } from "@/lib/stressIndex";
+import { generateAIComment } from "@/lib/aiComments";
+import { estimateCO2Savings } from "@/lib/co2";
+import type { ETAResponse, FormValues, StressData } from "@/types";
+
+interface ResultState {
+  stressData: StressData[];
+  origin: string;
+  destination: string;
+  desiredArrival: string;
+}
+
+export default function HomePage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<ResultState | null>(null);
+
+  const handleSubmit = async (values: FormValues) => {
+    setIsLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const departureTimes = generateDepartureTimes(
+        values.startTime,
+        values.endTime,
+        values.intervalMinutes,
+        values.targetDay
+      );
+
+      if (departureTimes.length === 0) {
+        throw new Error("Please set a valid departure window (start time must be before end time).");
+      }
+
+      const response = await fetch("/api/eta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: values.origin,
+          destination: values.destination,
+          departureTimes,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data: ETAResponse = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Parse desired arrival as timestamp — must match the same targetDay date
+      // that generateDepartureTimes uses, otherwise the comparison is meaningless
+      const [hours, minutes] = values.desiredArrivalTime.split(":").map(Number);
+      const arrivalDate = new Date();
+      arrivalDate.setSeconds(0, 0);
+      let daysAhead = (values.targetDay - arrivalDate.getDay() + 7) % 7;
+      if (daysAhead === 0) daysAhead = 7; // same logic as generateDepartureTimes
+      arrivalDate.setDate(arrivalDate.getDate() + daysAhead);
+      arrivalDate.setHours(hours, minutes, 0, 0);
+      const desiredArrivalTimestamp = Math.floor(arrivalDate.getTime() / 1000);
+
+      const stressData = calculateStressData(
+        data.results,
+        data.freeFlowDuration,
+        desiredArrivalTimestamp
+      );
+      // Format desired arrival for display
+      const displayHours = hours % 12 || 12;
+      const displayMinutes = minutes.toString().padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const desiredArrival = `${displayHours}:${displayMinutes} ${ampm}`;
+
+      setResult({
+        stressData,
+        origin: values.origin,
+        destination: values.destination,
+        desiredArrival,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Derived data for panels
+  const aiComment =
+    result
+      ? generateAIComment({
+          stressData: result.stressData,
+          sweetSpotIndex: -1,
+          origin: result.origin,
+          destination: result.destination,
+        })
+      : null;
+
+  const co2Data = result && result.stressData.length > 0
+    ? (() => {
+        const delays = result.stressData.map(
+          (d) => d.durationInTrafficMinutes - d.durationMinutes
+        );
+        const worstDelay = Math.max(...delays);
+        const bestDelay = Math.min(...delays);
+        const worstSlot = result.stressData[delays.indexOf(worstDelay)];
+        const bestSlot = result.stressData[delays.indexOf(bestDelay)];
+        return {
+          ...estimateCO2Savings(worstDelay, bestDelay),
+          worstLabel: worstSlot.departureLabel,
+          bestLabel: bestSlot.departureLabel,
+        };
+      })()
+    : null;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-slate-50">
+      <HeroSection />
+
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
+        {/* Input Form */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-sm text-red-600">
+            <span className="font-semibold">Error:</span> {error}
+          </div>
+        )}
+
+        {/* Results */}
+        {result && (
+          <div className="space-y-8">
+            {/* Route summary */}
+            <div className="flex items-center gap-3 text-sm text-slate-500">
+              <span className="font-medium text-slate-700">{result.origin}</span>
+              <svg
+                className="w-4 h-4 text-slate-300"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-medium text-slate-700">
+                {result.destination}
+              </span>
+              <span className="ml-auto text-slate-400">
+                Goal:{" "}
+                <span className="font-semibold text-slate-600">
+                  {result.desiredArrival}
+                </span>
+              </span>
+            </div>
+
+            {/* Result Cards Grid */}
+            <section>
+              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-4">
+                Departure Windows
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {result.stressData.map((data) => (
+                  <ResultCard
+                    key={data.departureLabel}
+                    data={data}
+                    desiredArrival={result.desiredArrival}
+                  />
+                ))}
+              </div>
+            </section>
+
+            {/* Traffic Curve */}
+            <TrafficCurve
+              stressData={result.stressData}
+              desiredArrival={result.desiredArrival}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+            {/* AI Comment */}
+            {aiComment && <AIComment comment={aiComment} />}
+
+            {/* Collective Impact Simulator */}
+            {result.stressData.length > 0 && (() => {
+              const durations = result.stressData.map((d) => d.durationInTrafficMinutes);
+              const freeFLow = Math.min(...result.stressData.map((d) => d.durationMinutes));
+              const peakDelay = Math.max(...durations) - freeFLow;
+              return (
+                <CollectiveImpact
+                  peakDelayMinutes={peakDelay}
+                  freeFlowMinutes={freeFLow}
+                />
+              );
+            })()}
+
+            {/* CO2 */}
+            {co2Data && (
+              <CO2Section
+                savingsKg={co2Data.savingsKg}
+                savingsGrams={co2Data.savingsGrams}
+                equivalent={co2Data.equivalent}
+                worstLabel={co2Data.worstLabel}
+                bestLabel={co2Data.bestLabel}
+              />
+            )}
+
+            {/* Philosophy footer */}
+            <div className="text-center py-8 border-t border-slate-200">
+              <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                AlohaShift presents options — not prescriptions. We do not
+                notify, push, or optimize on your behalf. The decision is always
+                yours.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

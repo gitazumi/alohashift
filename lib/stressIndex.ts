@@ -1,0 +1,168 @@
+import type { ETAResult, StressData, StressLevel } from "@/types";
+
+/**
+ * Compute Stress Index for a single departure slot.
+ *
+ * Formula:
+ *   delay      = travel_time_min - free_flow_min
+ *   lateness   = max(0, arrival_unix - goal_unix) / 60   (minutes late)
+ *   volatility = |local_slope|  (rate of travel-time change vs adjacent slots)
+ *
+ *   StressIndex = clamp( round(
+ *     (delay / free_flow_min) * 100   ← congestion ratio component
+ *     + lateness * 2                  ← lateness penalty
+ *     + volatility * 8                ← instability penalty
+ *   ), 0, 200 )
+ *
+ * Levels (display-normalized to 0–100):
+ *   0–35  → Stable
+ *   36–70 → Moderate
+ *   71+   → Volatile
+ */
+function computeStressIndex(
+  travelMin: number,
+  freeFlowMin: number,
+  latenessMin: number,
+  localSlope: number
+): number {
+  if (freeFlowMin <= 0) return 0;
+  const delay = travelMin - freeFlowMin;
+  const congestionRatio = (delay / freeFlowMin) * 100;
+  const latenessPenalty = latenessMin * 2;
+  const volatilityPenalty = Math.abs(localSlope) * 8;
+  const raw = congestionRatio + latenessPenalty + volatilityPenalty;
+  return Math.min(200, Math.max(0, Math.round(raw)));
+}
+
+function toStressLevel(index: number): StressLevel {
+  if (index <= 35) return "stable";
+  if (index <= 70) return "moderate";
+  return "volatile";
+}
+
+export function calculateStressData(
+  results: ETAResult[],
+  freeFlowDuration: number,
+  desiredArrivalTimestamp: number
+): StressData[] {
+  const valid = results.filter((r) => r.status === "OK");
+  const freeFlowMin = freeFlowDuration / 60;
+
+  // Pre-compute travel minutes for slope calculation
+  const travelMins = valid.map((r) =>
+    Math.round(r.durationInTrafficSeconds / 60)
+  );
+
+  const rawData = valid.map((result, index) => {
+    const durationMinutes = Math.round(result.durationSeconds / 60);
+    const durationInTrafficMinutes = travelMins[index];
+
+    // Local slope: rate of change vs neighbors (min per slot)
+    const prev = travelMins[index - 1] ?? travelMins[index];
+    const next = travelMins[index + 1] ?? travelMins[index];
+    const localSlope = (next - prev) / 2;
+
+    // Lateness
+    const latenessMin =
+      result.arrivalTime > desiredArrivalTimestamp
+        ? (result.arrivalTime - desiredArrivalTimestamp) / 60
+        : 0;
+
+    const stressIndex = computeStressIndex(
+      durationInTrafficMinutes,
+      freeFlowMin,
+      latenessMin,
+      localSlope
+    );
+    const stressLevel = toStressLevel(stressIndex);
+
+    // Risk Factor (trend signal)
+    let riskFactor = 5;
+    if (index < valid.length - 1) {
+      const currentDelay = result.durationInTrafficSeconds - result.durationSeconds;
+      const nextDelay =
+        valid[index + 1].durationInTrafficSeconds -
+        valid[index + 1].durationSeconds;
+      if (nextDelay > currentDelay * 1.1) riskFactor = 20;
+    }
+
+    // Lateness risk badge
+    const minutesBuffer = Math.round(
+      (desiredArrivalTimestamp - result.arrivalTime) / 60
+    );
+    let latenessRisk: "green" | "yellow" | "red";
+    if (result.arrivalTime > desiredArrivalTimestamp) {
+      latenessRisk = "red";
+    } else if (minutesBuffer <= 5) {
+      latenessRisk = "yellow";
+    } else {
+      latenessRisk = "green";
+    }
+
+    return {
+      departureLabel: result.departureLabel,
+      arrivalLabel: result.arrivalLabel,
+      durationMinutes,
+      durationInTrafficMinutes,
+      stressIndex,
+      stressLevel,
+      riskFactor,
+      latenessRisk,
+      minutesBuffer,
+      isSweetSpot: false, // filled in below
+    };
+  });
+
+  return rawData;
+}
+
+// kept for compatibility (no longer used in UI but referenced in some paths)
+export function findSweetSpot(results: ETAResult[]): number {
+  const valid = results.filter((r) => r.status === "OK");
+  if (valid.length === 0) return -1;
+  let minDuration = Infinity;
+  let sweetIndex = 0;
+  valid.forEach((r, i) => {
+    if (r.durationInTrafficSeconds < minDuration) {
+      minDuration = r.durationInTrafficSeconds;
+      sweetIndex = i;
+    }
+  });
+  return sweetIndex;
+}
+
+/**
+ * Generate departure timestamps from a start time to end time
+ * at a given interval, on the next occurrence of targetDay (0=Sun…6=Sat).
+ * Google requires future timestamps for traffic predictions.
+ */
+export function generateDepartureTimes(
+  startTime: string,
+  endTime: string,
+  intervalMinutes: number = 10,
+  targetDay: number = 1
+): number[] {
+  const [startH, startM] = startTime.split(":").map(Number);
+  const [endH, endM] = endTime.split(":").map(Number);
+
+  const base = new Date();
+  base.setSeconds(0, 0);
+  let daysAhead = (targetDay - base.getDay() + 7) % 7;
+  if (daysAhead === 0) daysAhead = 7;
+  base.setDate(base.getDate() + daysAhead);
+
+  const start = new Date(base);
+  start.setHours(startH, startM, 0, 0);
+  const end = new Date(base);
+  end.setHours(endH, endM, 0, 0);
+
+  if (start >= end) return [];
+
+  const times: number[] = [];
+  const current = new Date(start);
+  while (current <= end) {
+    times.push(Math.floor(current.getTime() / 1000));
+    current.setMinutes(current.getMinutes() + intervalMinutes);
+  }
+  return times.slice(0, 8);
+}
