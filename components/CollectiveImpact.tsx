@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 
 interface CollectiveImpactProps {
-  peakDelayMinutes: number; // worst slot − free_flow (minutes)
-  freeFlowMinutes: number;  // baseline free-flow travel time
+  peakDelayMinutes: number;  // worst slot − free_flow (minutes)
+  freeFlowMinutes: number;   // baseline free-flow travel time
+  personalSavedMin: number;  // best slot vs worst slot in user's results
+  worstLabel: string;        // departure label of worst slot
+  bestLabel: string;         // departure label of best slot
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const COMMUTE_DAYS_PER_YEAR      = 240;   // 5 days × 48 weeks
-// Extra fuel burned in congestion vs free-flow
-// Avg car: ~25 MPG highway vs ~15 MPG stop-and-go → extra ≈ 0.034 gal/min
-const AVG_FUEL_GAL_PER_CONG_MIN = 0.034;
+const AVG_FUEL_GAL_PER_CONG_MIN = 0.034; // extra gal burned in congestion vs free-flow
 const GAS_PRICE                  = 4.50;  // USD per gallon (Hawaii avg)
 const CO2_PER_CONGESTION_MIN     = 0.02;  // kg CO₂ per congestion-minute
 const TOTAL_COMMUTERS            = 10_000;
@@ -27,43 +28,47 @@ function Num({ value, decimals = 0 }: { value: number; decimals?: number }) {
   return <>{decimals > 0 ? value.toFixed(decimals) : Math.round(value).toLocaleString()}</>;
 }
 
-export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: CollectiveImpactProps) {
-  // Section A: Personal — only shiftMinutes matters
-  const [shiftMinutes, setShiftMinutes] = useState(10);
+export default function CollectiveImpact({
+  peakDelayMinutes,
+  freeFlowMinutes,
+  personalSavedMin,
+  worstLabel,
+  bestLabel,
+}: CollectiveImpactProps) {
 
-  // Section B: City-scale — participationPct + shiftMinutes
+  // City-scale slider only
   const [participationPct, setParticipationPct] = useState(10);
 
-  // ── A: Personal Impact ─────────────────────────────────────────────────
-  // If YOU leave X minutes earlier, you avoid the peak congestion window.
-  // We estimate you save up to shiftMinutes of congestion per commute.
+  // ── A: Personal Impact — based on actual results ───────────────────────
+  // "If you always chose the least congested slot instead of the worst"
   const personal = useMemo(() => {
-    // Minutes of congestion avoided per day by shifting earlier
-    // Capped by actual peak delay in results
-    const savedMin = Math.min(shiftMinutes, peakDelayMinutes);
-    const annualMin = savedMin * COMMUTE_DAYS_PER_YEAR;
-    const annualHours = annualMin / 60;
+    const annualMin     = personalSavedMin * COMMUTE_DAYS_PER_YEAR;
+    const annualHours   = annualMin / 60;
     const annualFuelDol = annualMin * AVG_FUEL_GAL_PER_CONG_MIN * GAS_PRICE;
-    const annualCO2Kg = annualMin * CO2_PER_CONGESTION_MIN;
+    const annualCO2Kg   = annualMin * CO2_PER_CONGESTION_MIN;
     const workdaysEquiv = Math.round((annualMin / 480) * 10) / 10;
-    return { savedMin, annualMin: Math.round(annualMin), annualHours, annualFuelDol, annualCO2Kg, workdaysEquiv };
-  }, [shiftMinutes, peakDelayMinutes]);
+    return {
+      annualMin: Math.round(annualMin),
+      annualHours,
+      annualFuelDol,
+      annualCO2Kg,
+      workdaysEquiv,
+    };
+  }, [personalSavedMin]);
 
-  // ── B: City-Scale Impact ────────────────────────────────────────────────
-  // If X% of all commuters shift earlier by shiftMinutes,
-  // peak congestion is reduced by reductionFactor.
+  // ── B: City-Scale Impact ───────────────────────────────────────────────
   const city = useMemo(() => {
-    const rate = participationPct / 100;
-    const reductionFactor = 0.6 * rate * (shiftMinutes / 10);
-    const shifters = Math.round(TOTAL_COMMUTERS * rate);
+    const rate                 = participationPct / 100;
+    const reductionFactor      = 0.6 * rate * (Math.max(personalSavedMin, 5) / 10);
+    const shifters             = Math.round(TOTAL_COMMUTERS * rate);
     const delayReducedPerPerson = peakDelayMinutes * reductionFactor;
-    const totalDailyMin = shifters * delayReducedPerPerson;
-    const cityAnnualMin = totalDailyMin * 365;
-    const cityAnnualHours = Math.round(cityAnnualMin / 60);
-    const cityAnnualCO2Ton = Math.round((cityAnnualMin * CO2_PER_CONGESTION_MIN / 1000) * 10) / 10;
-    const congRedPct = Math.round(reductionFactor * 100);
+    const totalDailyMin        = shifters * delayReducedPerPerson;
+    const cityAnnualMin        = totalDailyMin * 365;
+    const cityAnnualHours      = Math.round(cityAnnualMin / 60);
+    const cityAnnualCO2Ton     = Math.round((cityAnnualMin * CO2_PER_CONGESTION_MIN / 1000) * 10) / 10;
+    const congRedPct           = Math.round(reductionFactor * 100);
     return { shifters, congRedPct, cityAnnualHours, cityAnnualCO2Ton };
-  }, [participationPct, shiftMinutes, peakDelayMinutes]);
+  }, [participationPct, personalSavedMin, peakDelayMinutes]);
 
   if (peakDelayMinutes <= 0 || freeFlowMinutes <= 0) return null;
 
@@ -81,48 +86,28 @@ export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: 
         </p>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════════════════════════
           SECTION A — PERSONAL IMPACT
-          Only depends on "how many minutes earlier YOU leave"
-      ══════════════════════════════════════════════════════════════════ */}
+          Based entirely on the user's actual results
+      ══════════════════════════════════════════════════════════════ */}
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 space-y-4">
         <div className="flex items-center gap-2">
           <span className="text-base">🙋</span>
           <div>
             <p className="text-sm font-semibold text-emerald-800">Your Personal Impact</p>
             <p className="text-xs text-emerald-600">
-              If <strong>you</strong> leave earlier every commute day — what do you gain per year?
+              Based on <strong>your actual results</strong> — if you always chose{" "}
+              <strong>{bestLabel}</strong> instead of <strong>{worstLabel}</strong>
             </p>
           </div>
         </div>
 
-        {/* Shift amount selector */}
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
-              How many minutes earlier do you leave?
-            </label>
-            <span className="text-sm font-bold text-emerald-700">{shiftMinutes} min</span>
-          </div>
-          <div className="flex gap-2 mt-2">
-            {[5, 10, 15].map((m) => (
-              <button
-                key={m}
-                onClick={() => setShiftMinutes(m)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition ${
-                  shiftMinutes === m
-                    ? "bg-emerald-500 text-white border-emerald-500"
-                    : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
-                }`}
-              >
-                {m} min
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-slate-400 mt-2">
-            Based on your results, peak congestion adds <strong>{peakDelayMinutes} min</strong> to your commute.
-            Leaving {shiftMinutes} min earlier avoids up to <strong>{personal.savedMin} min</strong> of that delay.
-          </p>
+        {/* Explanation */}
+        <div className="bg-white border border-emerald-100 rounded-xl px-4 py-3 text-xs text-slate-500 leading-relaxed">
+          In your results, departing at <span className="font-semibold text-slate-700">{bestLabel}</span> saves{" "}
+          <span className="font-semibold text-emerald-700">{personalSavedMin} minutes</span> of congestion
+          compared to <span className="font-semibold text-slate-700">{worstLabel}</span>.
+          If you made that choice every commute day, here's what adds up over a year:
         </div>
 
         {/* Personal result cards */}
@@ -134,7 +119,7 @@ export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: 
               <span className="text-base font-normal ml-1">hrs</span>
             </p>
             <p className="text-xs text-emerald-500 mt-1">per year</p>
-            <p className="text-xs text-slate-400 mt-1">{personal.savedMin} min × {COMMUTE_DAYS_PER_YEAR} days</p>
+            <p className="text-xs text-slate-400 mt-1">{personalSavedMin} min × {COMMUTE_DAYS_PER_YEAR} days</p>
             {personal.workdaysEquiv >= 0.5 && (
               <p className="text-xs text-emerald-600 mt-2 font-medium">
                 ≈ {personal.workdaysEquiv} full workday{personal.workdaysEquiv !== 1 ? "s" : ""} back
@@ -163,17 +148,16 @@ export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: 
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════════════════════════
           SECTION B — CITY-SCALE IMPACT
-          Depends on participation % + shift minutes
-      ══════════════════════════════════════════════════════════════════ */}
+      ══════════════════════════════════════════════════════════════ */}
       <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 space-y-4">
         <div className="flex items-center gap-2">
           <span className="text-base">🌐</span>
           <div>
             <p className="text-sm font-semibold text-blue-800">City-Scale Impact</p>
             <p className="text-xs text-blue-500">
-              What if many commuters made the same shift? How would Honolulu change?
+              What if many Honolulu commuters made the same timing shift?
             </p>
           </div>
         </div>
@@ -187,8 +171,8 @@ export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: 
             <span className="text-sm font-bold text-blue-600">{participationPct}%</span>
           </div>
           <p className="text-xs text-slate-400 mb-2">
-            = <span className="font-medium text-slate-600">{city.shifters.toLocaleString()} people</span> out of {TOTAL_COMMUTERS.toLocaleString()} total commuters,
-            each leaving {shiftMinutes} min earlier (same as your shift above)
+            = <span className="font-medium text-slate-600">{city.shifters.toLocaleString()} people</span>{" "}
+            out of {TOTAL_COMMUTERS.toLocaleString()} commuters choosing a less congested departure time
           </p>
           <input
             type="range" min={1} max={30} step={1}

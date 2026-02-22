@@ -206,12 +206,21 @@ export default function HomePage() {
             {/* Collective Impact Simulator */}
             {result.stressData.length > 0 && (() => {
               const durations = result.stressData.map((d) => d.durationInTrafficMinutes);
-              const freeFLow = Math.min(...result.stressData.map((d) => d.durationMinutes));
-              const peakDelay = Math.max(...durations) - freeFLow;
+              const freeFlow = Math.min(...result.stressData.map((d) => d.durationMinutes));
+              const peakDelay = Math.max(...durations) - freeFlow;
+              const worstIdx = durations.indexOf(Math.max(...durations));
+              const bestIdx  = durations.indexOf(Math.min(...durations));
+              const worstSlot = result.stressData[worstIdx];
+              const bestSlot  = result.stressData[bestIdx];
+              // Minutes saved by choosing best slot over worst slot
+              const personalSavedMin = Math.max(0, durations[worstIdx] - durations[bestIdx]);
               return (
                 <CollectiveImpact
                   peakDelayMinutes={peakDelay}
-                  freeFlowMinutes={freeFLow}
+                  freeFlowMinutes={freeFlow}
+                  personalSavedMin={personalSavedMin}
+                  worstLabel={worstSlot.departureLabel}
+                  bestLabel={bestSlot.departureLabel}
                 />
               );
             })()}
