@@ -1,9 +1,16 @@
 "use client";
 
+import Image from "next/image";
+
 export default function HeroSection() {
   return (
     <section className="bg-gradient-to-b from-blue-50 to-white border-b border-blue-100 px-6 py-20">
       <div className="max-w-3xl mx-auto text-center">
+
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Image src="/logo.svg" alt="AlohaShift logo" width={72} height={72} priority />
+        </div>
 
         {/* Badge */}
         <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full mb-8">

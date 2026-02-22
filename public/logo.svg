@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="50" fill="#3B82F6"/>
+
+  <!-- Wave shape (Hawaii ocean) -->
+  <path d="M15 62 Q25 52 35 62 Q45 72 55 62 Q65 52 75 62 Q82 68 88 62"
+        stroke="white" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <path d="M10 70 Q22 60 34 70 Q46 80 58 70 Q70 60 82 70 Q88 74 92 70"
+        stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.35"/>
+
+  <!-- Arrow pointing right-up (shift / timing shift) -->
+  <path d="M30 58 L50 35 L70 58" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M50 35 L50 68" stroke="white" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+</svg>
