@@ -19,6 +19,16 @@ const DAYS: { label: string; value: TargetDay; isWeekend: boolean }[] = [
   { label: "Sat", value: 6, isWeekend: true },
 ];
 
+// Get current day of week in Hawaii Standard Time (UTC-10)
+function getHawaiiDayOfWeek(): number {
+  const now = new Date();
+  // Hawaii is UTC-10 (no daylight saving time)
+  const hawaiiOffset = -10 * 60; // minutes
+  const utcMinutes = now.getTime() / 60000 + now.getTimezoneOffset();
+  const hawaiiDate = new Date((utcMinutes + hawaiiOffset) * 60000);
+  return hawaiiDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+}
+
 export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
   const [values, setValues] = useState<FormValues>({
     origin: "",
@@ -27,7 +37,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     endTime: "07:30",
     intervalMinutes: 10,
     desiredArrivalTime: "07:45",
-    targetDay: 1, // Monday default
+    targetDay: getHawaiiDayOfWeek(), // Auto-detect Hawaii day
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,9 +99,14 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
           {/* Day of week */}
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">
-              Day of Week
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest">
+                Day of Week
+              </label>
+              <span className="text-xs text-blue-400 font-medium">
+                📍 Today in Hawaii: {DAYS[getHawaiiDayOfWeek()].label}
+              </span>
+            </div>
             <div className="grid grid-cols-7 gap-1.5">
               {DAYS.map((day) => (
                 <button
