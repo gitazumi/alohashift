@@ -70,14 +70,36 @@ export async function POST(request: NextRequest) {
           const durationSeconds = element.duration.value;
           const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
 
-          // Amplify the congestion portion by 10% to better reflect
-          // real-world Hawaii traffic (Google tends to underestimate peak congestion)
-          const CONGESTION_MULTIPLIER = 1.10;
+          // Graduated congestion multiplier:
+          // The heavier the congestion, the larger the correction applied.
+          // Baseline (free-flow) = 0% extra
+          // Light congestion     = +10%
+          // Moderate congestion  = +15%
+          // Heavy congestion     = +20% (peak)
           const congestionDelay = rawDurationInTrafficSeconds - durationSeconds;
-          const durationInTrafficSeconds =
-            congestionDelay > 0
-              ? Math.round(durationSeconds + congestionDelay * CONGESTION_MULTIPLIER)
-              : rawDurationInTrafficSeconds;
+          let durationInTrafficSeconds: number;
+          if (congestionDelay <= 0) {
+            // No congestion — use raw value as-is
+            durationInTrafficSeconds = rawDurationInTrafficSeconds;
+          } else {
+            // Congestion ratio: how much longer vs free-flow (0.0 = none, 1.0 = 2x)
+            const congestionRatio = congestionDelay / durationSeconds;
+            // Graduated multiplier: 1.10 → 1.15 → 1.20 based on congestion ratio
+            let multiplier: number;
+            if (congestionRatio < 0.20) {
+              // Light congestion (<20% slower than free-flow) → +10%
+              multiplier = 1.10;
+            } else if (congestionRatio < 0.50) {
+              // Moderate congestion (20–50% slower) → +15%
+              multiplier = 1.15;
+            } else {
+              // Heavy congestion (50%+ slower = peak hour) → +20%
+              multiplier = 1.20;
+            }
+            durationInTrafficSeconds = Math.round(
+              durationSeconds + congestionDelay * multiplier
+            );
+          }
 
           const arrivalTime = departureTime + durationInTrafficSeconds;
 
