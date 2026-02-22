@@ -83,12 +83,16 @@ export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: 
       {/* ── Sliders ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-1">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
-              Commuters shifting earlier
+              % of Commuters Who Shift Earlier
             </label>
             <span className="text-sm font-bold text-blue-600">{participationPct}%</span>
           </div>
+          <p className="text-xs text-slate-400 mb-2">
+            Out of {TOTAL_COMMUTERS.toLocaleString()} Honolulu commuters, how many change their departure time?
+            → <span className="font-medium text-slate-500">{Math.round(TOTAL_COMMUTERS * participationPct / 100).toLocaleString()} people</span>
+          </p>
           <input
             type="range" min={1} max={30} step={1}
             value={participationPct}
@@ -101,12 +105,15 @@ export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: 
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-1">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
-              Shift amount
+              How Much Earlier They Leave
             </label>
             <span className="text-sm font-bold text-blue-600">{shiftMinutes} min earlier</span>
           </div>
+          <p className="text-xs text-slate-400 mb-2">
+            By how many minutes does each person shift their departure?
+          </p>
           <div className="flex gap-2">
             {[5, 10, 15].map((m) => (
               <button
