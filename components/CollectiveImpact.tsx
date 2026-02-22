@@ -9,7 +9,10 @@ interface CollectiveImpactProps {
 
 // ── Constants (all shown transparently in UI) ──────────────────────────────
 const COMMUTE_DAYS_PER_YEAR        = 240;   // 5 days × 48 weeks
-const AVG_FUEL_GAL_PER_CONG_MIN   = 0.02;  // gallons burned per congestion-minute
+// Fuel: avg car gets ~25 MPG at highway speed, ~15 MPG in stop-and-go congestion
+// Congestion driving burns ~0.067 gal/min (15MPG ÷ 60min × 60mph equivalent)
+// vs free-flow ~0.033 gal/min → extra burn in congestion ≈ 0.034 gal/min
+const AVG_FUEL_GAL_PER_CONG_MIN   = 0.034; // extra gallons burned per congestion-minute
 const GAS_PRICE                    = 4.50;  // USD per gallon (Hawaii avg)
 const CO2_PER_CONGESTION_MIN       = 0.02;  // kg CO₂ per congestion-minute
 const TOTAL_COMMUTERS              = 10_000;
@@ -246,7 +249,7 @@ export default function CollectiveImpact({ peakDelayMinutes, freeFlowMinutes }: 
       <div className="border-t border-slate-100 pt-4 text-xs text-slate-400 leading-relaxed">
         <span className="font-semibold text-slate-500">Assumptions: </span>
         {COMMUTE_DAYS_PER_YEAR} commute days/year · ${GAS_PRICE}/gal gas (Hawaii avg) ·{" "}
-        {AVG_FUEL_GAL_PER_CONG_MIN} gal per congestion-minute ·{" "}
+        {AVG_FUEL_GAL_PER_CONG_MIN} gal extra burned per congestion-minute (congestion vs free-flow) ·{" "}
         {CO2_PER_CONGESTION_MIN} kg CO₂ per congestion-minute · {TOTAL_COMMUTERS.toLocaleString()} total commuters assumed.{" "}
         Simulation values are simplified estimates, not empirical measurements.
         Model: reduction_factor = 0.6 × participation_rate × (shift_min / 10).

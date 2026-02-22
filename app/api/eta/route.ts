@@ -17,9 +17,12 @@ interface DistanceMatrixResponse {
 }
 
 function formatTime(timestamp: number): string {
-  const date = new Date(timestamp * 1000);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
+  // Always display in Hawaii Standard Time (UTC-10)
+  const hawaiiOffsetMs = -10 * 60 * 60 * 1000;
+  const hawaiiMs = timestamp * 1000 + hawaiiOffsetMs;
+  const date = new Date(hawaiiMs);
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
   const ampm = hours >= 12 ? "PM" : "AM";
   const displayHours = hours % 12 || 12;
   const displayMinutes = minutes.toString().padStart(2, "0");
