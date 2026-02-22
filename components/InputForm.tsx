@@ -37,7 +37,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     endTime: "07:30",
     intervalMinutes: 10,
     desiredArrivalTime: "07:45",
-    targetDay: getHawaiiDayOfWeek(), // Auto-detect Hawaii day
+    targetDay: getHawaiiDayOfWeek() as TargetDay, // Auto-detect Hawaii day
   });
 
   const handleSubmit = (e: React.FormEvent) => {
