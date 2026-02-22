@@ -145,24 +145,40 @@ export function generateDepartureTimes(
   const [startH, startM] = startTime.split(":").map(Number);
   const [endH, endM] = endTime.split(":").map(Number);
 
-  const base = new Date();
-  base.setSeconds(0, 0);
-  let daysAhead = (targetDay - base.getDay() + 7) % 7;
+  // Hawaii Standard Time is UTC-10 (no daylight saving time)
+  const HAWAII_OFFSET_MS = -10 * 60 * 60 * 1000;
+
+  // Get current time in Hawaii
+  const nowUtcMs = Date.now();
+  const nowHawaiiMs = nowUtcMs + HAWAII_OFFSET_MS;
+  const nowHawaii = new Date(nowHawaiiMs);
+
+  // Current day of week in Hawaii
+  const hawaiiDayOfWeek = nowHawaii.getUTCDay(); // 0=Sun…6=Sat
+
+  // Find next occurrence of targetDay in Hawaii time
+  let daysAhead = (targetDay - hawaiiDayOfWeek + 7) % 7;
   if (daysAhead === 0) daysAhead = 7;
-  base.setDate(base.getDate() + daysAhead);
 
-  const start = new Date(base);
-  start.setHours(startH, startM, 0, 0);
-  const end = new Date(base);
-  end.setHours(endH, endM, 0, 0);
+  // Build Hawaii date for the target day (year/month/day in Hawaii)
+  const targetHawaiiMs = nowHawaiiMs + daysAhead * 24 * 60 * 60 * 1000;
+  const targetHawaii = new Date(targetHawaiiMs);
+  const year  = targetHawaii.getUTCFullYear();
+  const month = targetHawaii.getUTCMonth();
+  const day   = targetHawaii.getUTCDate();
 
-  if (start >= end) return [];
+  // Build UTC timestamps for startTime and endTime on that Hawaii date
+  // Hawaii HH:MM → UTC = HH:MM + 10h
+  const startUtcMs = Date.UTC(year, month, day, startH + 10, startM, 0, 0);
+  const endUtcMs   = Date.UTC(year, month, day, endH   + 10, endM,   0, 0);
+
+  if (startUtcMs >= endUtcMs) return [];
 
   const times: number[] = [];
-  const current = new Date(start);
-  while (current <= end) {
-    times.push(Math.floor(current.getTime() / 1000));
-    current.setMinutes(current.getMinutes() + intervalMinutes);
+  let currentMs = startUtcMs;
+  while (currentMs <= endUtcMs) {
+    times.push(Math.floor(currentMs / 1000));
+    currentMs += intervalMinutes * 60 * 1000;
   }
   return times.slice(0, 8);
 }

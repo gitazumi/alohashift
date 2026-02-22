@@ -63,15 +63,23 @@ export default function HomePage() {
       }
 
       // Parse desired arrival as timestamp — must match the same targetDay date
-      // that generateDepartureTimes uses, otherwise the comparison is meaningless
+      // that generateDepartureTimes uses (Hawaii Standard Time = UTC-10)
       const [hours, minutes] = values.desiredArrivalTime.split(":").map(Number);
-      const arrivalDate = new Date();
-      arrivalDate.setSeconds(0, 0);
-      let daysAhead = (values.targetDay - arrivalDate.getDay() + 7) % 7;
-      if (daysAhead === 0) daysAhead = 7; // same logic as generateDepartureTimes
-      arrivalDate.setDate(arrivalDate.getDate() + daysAhead);
-      arrivalDate.setHours(hours, minutes, 0, 0);
-      const desiredArrivalTimestamp = Math.floor(arrivalDate.getTime() / 1000);
+      const HAWAII_OFFSET_MS = -10 * 60 * 60 * 1000;
+      const nowUtcMs = Date.now();
+      const nowHawaiiMs = nowUtcMs + HAWAII_OFFSET_MS;
+      const nowHawaii = new Date(nowHawaiiMs);
+      const hawaiiDayOfWeek = nowHawaii.getUTCDay();
+      let daysAhead = (values.targetDay - hawaiiDayOfWeek + 7) % 7;
+      if (daysAhead === 0) daysAhead = 7;
+      const targetHawaii = new Date(nowHawaiiMs + daysAhead * 24 * 60 * 60 * 1000);
+      const year  = targetHawaii.getUTCFullYear();
+      const month = targetHawaii.getUTCMonth();
+      const day   = targetHawaii.getUTCDate();
+      // Hawaii HH:MM → UTC = HH:MM + 10h
+      const desiredArrivalTimestamp = Math.floor(
+        Date.UTC(year, month, day, hours + 10, minutes, 0, 0) / 1000
+      );
 
       const stressData = calculateStressData(
         data.results,
