@@ -26,7 +26,7 @@ export default function CO2Section({
             CO₂ Perspective
           </h3>
           <p className="text-xs text-emerald-600">
-            Estimated reduction by choosing optimal departure
+            CO₂ difference between the least and most congested departure slots in your results
           </p>
         </div>
       </div>
@@ -37,16 +37,16 @@ export default function CO2Section({
           <span className="text-base font-normal ml-0.5">g</span>
         </span>
         <span className="text-sm text-emerald-600 mb-1">
-          CO₂ saved vs. worst window
+          CO₂ difference (best vs. worst slot)
         </span>
       </div>
 
       <p className="text-sm text-emerald-700 mb-3">{equivalent}</p>
 
       <div className="text-xs text-emerald-600 bg-white bg-opacity-60 rounded-xl p-3 border border-emerald-100">
-        Comparing <span className="font-semibold">{bestLabel}</span> (optimal)
-        vs <span className="font-semibold">{worstLabel}</span> (worst window)
-        &mdash; based on 0.02 kg CO₂ per congestion minute avoided.
+        <span className="font-semibold">{bestLabel}</span> (least congested)
+        vs <span className="font-semibold">{worstLabel}</span> (most congested)
+        &mdash; based on 0.02 kg CO₂ per congestion minute.
       </div>
     </div>
   );
