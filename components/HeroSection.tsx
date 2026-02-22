@@ -18,7 +18,7 @@ export default function HeroSection() {
 
         {/* Domain */}
         <p className="text-sm text-blue-400 tracking-widest mb-6 font-medium">
-          alohashift.com
+          AlohaShift.com
         </p>
 
         {/* Primary tagline */}
