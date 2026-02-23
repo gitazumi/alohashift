@@ -127,11 +127,11 @@ export default function CollectiveImpact({
             className="w-full accent-emerald-500"
           />
           <div className="flex justify-between text-xs text-slate-300 mt-1">
-            <span>5 min</span>
-            <span>10 min</span>
-            <span>15 min</span>
-            <span>20 min</span>
-            <span>25 min</span>
+            <span>5</span>
+            <span className="hidden sm:block">10</span>
+            <span className="hidden sm:block">15</span>
+            <span>20</span>
+            <span className="hidden sm:block">25</span>
             <span>30 min</span>
           </div>
         </div>

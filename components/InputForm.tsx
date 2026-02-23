@@ -107,7 +107,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                 📍 Today in Hawaii: {DAYS[getHawaiiDayOfWeek()].label}
               </span>
             </div>
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-7 gap-1">
               {DAYS.map((day) => (
                 <button
                   key={day.value}
@@ -115,7 +115,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                   onClick={() =>
                     setValues({ ...values, targetDay: day.value })
                   }
-                  className={`py-2.5 rounded-xl text-sm font-semibold border transition ${
+                  className={`py-2 rounded-lg text-xs font-semibold border transition ${
                     values.targetDay === day.value
                       ? day.isWeekend
                         ? "bg-slate-700 text-white border-slate-700"

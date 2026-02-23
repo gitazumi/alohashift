@@ -150,10 +150,10 @@ export default function TrafficCurve({ stressData, desiredArrival }: TrafficCurv
         <p className="text-xs text-slate-500 leading-relaxed mb-2">
           Stress Index quantifies <strong>congestion ratio</strong>, <strong>lateness risk</strong>, and <strong>instability</strong> per departure slot into a single score.
         </p>
-        <p className="text-xs text-slate-400 font-mono bg-white rounded-lg px-3 py-2 border border-slate-100 mb-2">
+        <p className="text-xs text-slate-400 font-mono bg-white rounded-lg px-3 py-2 border border-slate-100 mb-2 overflow-x-auto whitespace-nowrap">
           SI = (delay / free_flow) × 100 + lateness × 2 + |slope| × 8
         </p>
-        <div className="flex gap-4 text-xs">
+        <div className="flex flex-wrap gap-2 sm:gap-4 text-xs">
           <span className="text-emerald-600 font-semibold">0–35 Stable</span>
           <span className="text-amber-500 font-semibold">36–70 Moderate</span>
           <span className="text-red-500 font-semibold">71+ Volatile</span>

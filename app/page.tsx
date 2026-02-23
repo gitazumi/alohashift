@@ -6,11 +6,9 @@ import InputForm from "@/components/InputForm";
 import ResultCard from "@/components/ResultCard";
 import TrafficCurve from "@/components/TrafficCurve";
 import AIComment from "@/components/AIComment";
-import CO2Section from "@/components/CO2Section";
 import CollectiveImpact from "@/components/CollectiveImpact";
 import { calculateStressData, generateDepartureTimes } from "@/lib/stressIndex";
 import { generateAIComment } from "@/lib/aiComments";
-import { estimateCO2Savings } from "@/lib/co2";
 import type { ETAResponse, FormValues, StressData } from "@/types";
 
 interface ResultState {
@@ -116,22 +114,6 @@ export default function HomePage() {
         })
       : null;
 
-  const co2Data = result && result.stressData.length > 0
-    ? (() => {
-        const delays = result.stressData.map(
-          (d) => d.durationInTrafficMinutes - d.durationMinutes
-        );
-        const worstDelay = Math.max(...delays);
-        const bestDelay = Math.min(...delays);
-        const worstSlot = result.stressData[delays.indexOf(worstDelay)];
-        const bestSlot = result.stressData[delays.indexOf(bestDelay)];
-        return {
-          ...estimateCO2Savings(worstDelay, bestDelay),
-          worstLabel: worstSlot.departureLabel,
-          bestLabel: bestSlot.departureLabel,
-        };
-      })()
-    : null;
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -225,16 +207,6 @@ export default function HomePage() {
               );
             })()}
 
-            {/* CO2 */}
-            {co2Data && (
-              <CO2Section
-                savingsKg={co2Data.savingsKg}
-                savingsGrams={co2Data.savingsGrams}
-                equivalent={co2Data.equivalent}
-                worstLabel={co2Data.worstLabel}
-                bestLabel={co2Data.bestLabel}
-              />
-            )}
 
             {/* Philosophy footer */}
             <div className="text-center py-8 border-t border-slate-200">

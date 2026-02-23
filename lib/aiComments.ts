@@ -18,8 +18,8 @@ export function generateAIComment(context: AICommentContext): AIComment {
 
   if (!stressData || stressData.length === 0) {
     return {
-      headline: "No data available.",
-      detail: "Please try again with valid locations.",
+      headline: "Hmm, no data came back.",
+      detail: "Try checking your origin and destination — sometimes the API needs a moment.",
       tip: "",
     };
   }
@@ -35,39 +35,41 @@ export function generateAIComment(context: AICommentContext): AIComment {
   const anyOnTime = stressData.some((d) => d.latenessRisk === "green");
   const timeSaved = worstSlot.durationInTrafficMinutes - bestSlot.durationInTrafficMinutes;
 
-  // Analyze trend (early slots vs late slots)
+  // Trend: are later slots worse or better?
   const firstHalf = stressData.slice(0, Math.ceil(stressData.length / 2));
   const secondHalf = stressData.slice(Math.ceil(stressData.length / 2));
   const avgFirst = firstHalf.reduce((s, d) => s + d.durationInTrafficMinutes, 0) / firstHalf.length;
   const avgSecond = secondHalf.reduce((s, d) => s + d.durationInTrafficMinutes, 0) / secondHalf.length;
   const trend = avgSecond > avgFirst ? "worsening" : "improving";
 
-  // Headline
+  // ── Headline ──────────────────────────────────────────────────────────
   let headline = "";
   if (allLate) {
-    headline = "All departure times in this window risk a late arrival.";
-  } else if (anyOnTime && timeSaved >= 10) {
-    headline = `Departing at ${bestSlot.departureLabel} saves ${timeSaved} minutes over ${worstSlot.departureLabel}.`;
+    headline = "Every slot in this window runs late. The whole window might need to shift earlier.";
+  } else if (anyOnTime && timeSaved >= 15) {
+    headline = `Whoa — leaving at ${bestSlot.departureLabel} instead of ${worstSlot.departureLabel} saves ${timeSaved} minutes. That's huge.`;
+  } else if (anyOnTime && timeSaved >= 5) {
+    headline = `Leaving at ${bestSlot.departureLabel} saves about ${timeSaved} minutes compared to ${worstSlot.departureLabel}.`;
   } else {
-    headline = "Traffic conditions are relatively stable across this window.";
+    headline = "Traffic is pretty consistent across this window — timing doesn't change much here.";
   }
 
-  // Detail
+  // ── Detail ────────────────────────────────────────────────────────────
   let detail = "";
   if (trend === "worsening") {
-    detail = `Congestion builds as the window progresses. Leaving earlier — around ${bestSlot.departureLabel} — keeps travel time lower.`;
+    detail = `Traffic gets heavier as the window goes on. The earlier you leave, the smoother the ride — ${bestSlot.departureLabel} looks like the sweet spot.`;
   } else {
-    detail = `Traffic eases as the window progresses. A later departure around ${bestSlot.departureLabel} may offer a smoother ride.`;
+    detail = `Interestingly, traffic actually eases later in this window. ${bestSlot.departureLabel} might be worth trying if your schedule allows.`;
   }
 
-  // Tip
+  // ── Tip ───────────────────────────────────────────────────────────────
   let tip = "";
   if (allLate) {
-    tip = "Consider shifting your entire departure window earlier, or adjusting your arrival goal time.";
-  } else if (timeSaved >= 5) {
-    tip = `Choosing ${bestSlot.departureLabel} over ${worstSlot.departureLabel} could save approximately ${timeSaved} minutes of travel time.`;
+    tip = "Try moving your departure window 15–30 minutes earlier, or adjust your arrival goal. Small shifts can make a real difference.";
+  } else if (timeSaved >= 10) {
+    tip = `Just ${timeSaved} minutes of timing difference — that's the kind of thing most people never think about, but it adds up fast over a whole year.`;
   } else {
-    tip = "The difference between slots is small — any departure in this window should work well.";
+    tip = "Not a huge difference here, but on other days or routes the gap can be much bigger. Worth checking regularly!";
   }
 
   return { headline, detail, tip };
