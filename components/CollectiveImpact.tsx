@@ -36,25 +36,31 @@ export default function CollectiveImpact({
   bestLabel,
 }: CollectiveImpactProps) {
 
-  // City-scale slider only
+  // Personal scale selector: "actual" = based on results, or 5/10/15 min hypothetical
+  const [personalScale, setPersonalScale] = useState<"actual" | 5 | 10 | 15>("actual");
+
+  // City-scale slider
   const [participationPct, setParticipationPct] = useState(10);
 
-  // ── A: Personal Impact — based on actual results ───────────────────────
-  // "If you always chose the least congested slot instead of the worst"
+  // ── A: Personal Impact ─────────────────────────────────────────────────
+  const personalMinutes = personalScale === "actual" ? personalSavedMin : personalScale;
+
   const personal = useMemo(() => {
-    const annualMin     = personalSavedMin * COMMUTE_DAYS_PER_YEAR;
+    const savedMin      = Math.min(personalMinutes, peakDelayMinutes);
+    const annualMin     = savedMin * COMMUTE_DAYS_PER_YEAR;
     const annualHours   = annualMin / 60;
     const annualFuelDol = annualMin * AVG_FUEL_GAL_PER_CONG_MIN * GAS_PRICE;
     const annualCO2Kg   = annualMin * CO2_PER_CONGESTION_MIN;
     const workdaysEquiv = Math.round((annualMin / 480) * 10) / 10;
     return {
+      savedMin,
       annualMin: Math.round(annualMin),
       annualHours,
       annualFuelDol,
       annualCO2Kg,
       workdaysEquiv,
     };
-  }, [personalSavedMin]);
+  }, [personalMinutes, peakDelayMinutes]);
 
   // ── B: City-Scale Impact ───────────────────────────────────────────────
   const city = useMemo(() => {
@@ -96,18 +102,51 @@ export default function CollectiveImpact({
           <div>
             <p className="text-sm font-semibold text-emerald-800">Your Personal Impact</p>
             <p className="text-xs text-emerald-600">
-              Based on <strong>your actual results</strong> — if you always chose{" "}
-              <strong>{bestLabel}</strong> instead of <strong>{worstLabel}</strong>
+              How much do you gain per year by choosing a less congested departure?
             </p>
           </div>
         </div>
 
-        {/* Explanation */}
-        <div className="bg-white border border-emerald-100 rounded-xl px-4 py-3 text-xs text-slate-500 leading-relaxed">
-          In your results, departing at <span className="font-semibold text-slate-700">{bestLabel}</span> saves{" "}
-          <span className="font-semibold text-emerald-700">{personalSavedMin} minutes</span> of congestion
-          compared to <span className="font-semibold text-slate-700">{worstLabel}</span>.
-          If you made that choice every commute day, here's what adds up over a year:
+        {/* Scale selector */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
+              Minutes of congestion avoided per commute
+            </label>
+            <span className="text-sm font-bold text-emerald-700">{personal.savedMin} min</span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPersonalScale("actual")}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition ${
+                personalScale === "actual"
+                  ? "bg-emerald-500 text-white border-emerald-500"
+                  : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
+              }`}
+            >
+              Your results<br />
+              <span className="font-bold">{personalSavedMin} min</span>
+            </button>
+            {([5, 10, 15] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setPersonalScale(m)}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition ${
+                  personalScale === m
+                    ? "bg-emerald-500 text-white border-emerald-500"
+                    : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
+                }`}
+              >
+                Hypothetical<br />
+                <span className="font-bold">{m} min</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
+            {personalScale === "actual"
+              ? `Based on your results: ${bestLabel} (least congested) vs ${worstLabel} (most congested)`
+              : `Hypothetical: if you avoided ${personalScale} minutes of congestion every commute`}
+          </p>
         </div>
 
         {/* Personal result cards */}
@@ -119,7 +158,7 @@ export default function CollectiveImpact({
               <span className="text-base font-normal ml-1">hrs</span>
             </p>
             <p className="text-xs text-emerald-500 mt-1">per year</p>
-            <p className="text-xs text-slate-400 mt-1">{personalSavedMin} min × {COMMUTE_DAYS_PER_YEAR} days</p>
+            <p className="text-xs text-slate-400 mt-1">{personal.savedMin} min × {COMMUTE_DAYS_PER_YEAR} days</p>
             {personal.workdaysEquiv >= 0.5 && (
               <p className="text-xs text-emerald-600 mt-2 font-medium">
                 ≈ {personal.workdaysEquiv} full workday{personal.workdaysEquiv !== 1 ? "s" : ""} back
