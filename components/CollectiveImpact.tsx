@@ -36,17 +36,17 @@ export default function CollectiveImpact({
   bestLabel,
 }: CollectiveImpactProps) {
 
-  // Personal scale selector: "actual" = based on results, or 5/10/15 min hypothetical
-  const [personalScale, setPersonalScale] = useState<"actual" | 5 | 10 | 15>("actual");
+  // Personal: how many minutes earlier to shift from worst slot
+  const [personalShift, setPersonalShift] = useState(10);
 
   // City-scale slider
   const [participationPct, setParticipationPct] = useState(10);
 
   // ── A: Personal Impact ─────────────────────────────────────────────────
-  const personalMinutes = personalScale === "actual" ? personalSavedMin : personalScale;
-
+  // savedMin = congestion minutes avoided by shifting earlier from worst slot
+  // Capped by actual peak delay in results
   const personal = useMemo(() => {
-    const savedMin      = Math.min(personalMinutes, peakDelayMinutes);
+    const savedMin      = Math.min(personalShift, peakDelayMinutes);
     const annualMin     = savedMin * COMMUTE_DAYS_PER_YEAR;
     const annualHours   = annualMin / 60;
     const annualFuelDol = annualMin * AVG_FUEL_GAL_PER_CONG_MIN * GAS_PRICE;
@@ -60,7 +60,7 @@ export default function CollectiveImpact({
       annualCO2Kg,
       workdaysEquiv,
     };
-  }, [personalMinutes, peakDelayMinutes]);
+  }, [personalShift, peakDelayMinutes]);
 
   // ── B: City-Scale Impact ───────────────────────────────────────────────
   const city = useMemo(() => {
@@ -107,46 +107,33 @@ export default function CollectiveImpact({
           </div>
         </div>
 
-        {/* Scale selector */}
+        {/* Shift slider */}
         <div>
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-1">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
-              Minutes of congestion avoided per commute
+              How many minutes earlier do you leave?
             </label>
-            <span className="text-sm font-bold text-emerald-700">{personal.savedMin} min</span>
+            <span className="text-sm font-bold text-emerald-700">{personalShift} min earlier</span>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPersonalScale("actual")}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition ${
-                personalScale === "actual"
-                  ? "bg-emerald-500 text-white border-emerald-500"
-                  : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
-              }`}
-            >
-              Your results<br />
-              <span className="font-bold">{personalSavedMin} min</span>
-            </button>
-            {([5, 10, 15] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setPersonalScale(m)}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition ${
-                  personalScale === m
-                    ? "bg-emerald-500 text-white border-emerald-500"
-                    : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
-                }`}
-              >
-                Hypothetical<br />
-                <span className="font-bold">{m} min</span>
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-slate-400 mt-2">
-            {personalScale === "actual"
-              ? `Based on your results: ${bestLabel} (least congested) vs ${worstLabel} (most congested)`
-              : `Hypothetical: if you avoided ${personalScale} minutes of congestion every commute`}
+          <p className="text-xs text-slate-400 mb-2">
+            Starting from <span className="font-medium text-slate-600">{worstLabel}</span> (most congested slot),
+            shifting <span className="font-medium text-emerald-700">{personalShift} min earlier</span> avoids up to{" "}
+            <span className="font-medium text-emerald-700">{personal.savedMin} min</span> of congestion per commute.
           </p>
+          <input
+            type="range" min={5} max={30} step={5}
+            value={personalShift}
+            onChange={(e) => setPersonalShift(Number(e.target.value))}
+            className="w-full accent-emerald-500"
+          />
+          <div className="flex justify-between text-xs text-slate-300 mt-1">
+            <span>5 min</span>
+            <span>10 min</span>
+            <span>15 min</span>
+            <span>20 min</span>
+            <span>25 min</span>
+            <span>30 min</span>
+          </div>
         </div>
 
         {/* Personal result cards */}
