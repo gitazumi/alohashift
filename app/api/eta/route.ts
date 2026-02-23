@@ -16,6 +16,37 @@ interface DistanceMatrixResponse {
   rows: DistanceMatrixRow[];
 }
 
+/**
+ * Hawaii H1 Freeway Reality Correction
+ *
+ * Google Maps Distance Matrix API consistently underestimates travel times
+ * on Oahu's H1 freeway corridor during peak hours. Based on real commute data
+ * (Kapolei → Honolulu, 6:53 AM departure = 62 min actual vs 30 min API prediction),
+ * we apply a time-of-day correction factor to bring predictions closer to reality.
+ *
+ * Correction factors (applied to duration_in_traffic):
+ *   Early AM  (5:00–6:29): ×1.3  — light but building traffic
+ *   Peak AM   (6:30–8:59): ×1.9  — H1 freeway heavily congested
+ *   Mid AM    (9:00–10:59): ×1.4  — post-peak, still slow
+ *   Midday   (11:00–14:59): ×1.1  — near free-flow
+ *   Early PM (15:00–16:29): ×1.3  — building again
+ *   Peak PM  (16:30–18:59): ×1.7  — afternoon rush
+ *   Evening  (19:00+):      ×1.1  — light traffic
+ */
+function getHawaiiRealityMultiplier(departureTimestamp: number): number {
+  // Convert UTC timestamp to Hawaii hour (UTC-10)
+  const hawaiiHour = ((Math.floor(departureTimestamp / 3600) - 10) % 24 + 24) % 24;
+  const hawaiiMinute = Math.floor((departureTimestamp % 3600) / 60);
+  const fractionalHour = hawaiiHour + hawaiiMinute / 60;
+
+  if (fractionalHour >= 6.5 && fractionalHour < 9.0)  return 1.9;  // AM peak
+  if (fractionalHour >= 16.5 && fractionalHour < 19.0) return 1.7;  // PM peak
+  if (fractionalHour >= 9.0 && fractionalHour < 11.0)  return 1.4;  // post-AM peak
+  if (fractionalHour >= 15.0 && fractionalHour < 16.5) return 1.3;  // pre-PM peak
+  if (fractionalHour >= 5.0 && fractionalHour < 6.5)   return 1.3;  // early AM
+  return 1.1;  // midday / evening
+}
+
 function formatTime(timestamp: number): string {
   // Always display in Hawaii Standard Time (UTC-10)
   const hawaiiOffsetMs = -10 * 60 * 60 * 1000;
@@ -73,15 +104,12 @@ export async function POST(request: NextRequest) {
             const durationSeconds = element.duration.value;
             const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
 
-            // Graduated congestion multiplier:
-            // Baseline (free-flow) = 0% extra
-            // Light congestion     = +10%
-            // Moderate congestion  = +15%
-            // Heavy congestion     = +20% (peak)
+            // Step 1: Apply graduated congestion multiplier
+            // (corrects for Google's optimistic base estimate)
             const congestionDelay = rawDurationInTrafficSeconds - durationSeconds;
-            let durationInTrafficSeconds: number;
+            let adjustedDurationInTrafficSeconds: number;
             if (congestionDelay <= 0) {
-              durationInTrafficSeconds = rawDurationInTrafficSeconds;
+              adjustedDurationInTrafficSeconds = rawDurationInTrafficSeconds;
             } else {
               const congestionRatio = congestionDelay / durationSeconds;
               let multiplier: number;
@@ -92,10 +120,18 @@ export async function POST(request: NextRequest) {
               } else {
                 multiplier = 1.20;
               }
-              durationInTrafficSeconds = Math.round(
+              adjustedDurationInTrafficSeconds = Math.round(
                 durationSeconds + congestionDelay * multiplier
               );
             }
+
+            // Step 2: Apply Hawaii H1 reality correction factor
+            // Google Maps consistently underestimates Oahu peak-hour congestion.
+            // Real commute data shows ~1.9x correction needed during AM peak (6:30–9:00).
+            const realityMultiplier = getHawaiiRealityMultiplier(departureTime);
+            const durationInTrafficSeconds = Math.round(
+              adjustedDurationInTrafficSeconds * realityMultiplier
+            );
 
             const arrivalTime = departureTime + durationInTrafficSeconds;
             return {
