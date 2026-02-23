@@ -69,7 +69,6 @@ export default function HomePage() {
       const nowHawaii = new Date(nowHawaiiMs);
       const hawaiiDayOfWeek = nowHawaii.getUTCDay();
       let daysAhead = (values.targetDay - hawaiiDayOfWeek + 7) % 7;
-      if (daysAhead === 0) daysAhead = 7;
       const targetHawaii = new Date(nowHawaiiMs + daysAhead * 24 * 60 * 60 * 1000);
       const year  = targetHawaii.getUTCFullYear();
       const month = targetHawaii.getUTCMonth();

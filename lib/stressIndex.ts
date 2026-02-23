@@ -157,8 +157,8 @@ export function generateDepartureTimes(
   const hawaiiDayOfWeek = nowHawaii.getUTCDay(); // 0=Sun…6=Sat
 
   // Find next occurrence of targetDay in Hawaii time
+  // If today matches, use today (daysAhead = 0); otherwise find the next occurrence
   let daysAhead = (targetDay - hawaiiDayOfWeek + 7) % 7;
-  if (daysAhead === 0) daysAhead = 7;
 
   // Build Hawaii date for the target day (year/month/day in Hawaii)
   const targetHawaiiMs = nowHawaiiMs + daysAhead * 24 * 60 * 60 * 1000;
@@ -169,8 +169,15 @@ export function generateDepartureTimes(
 
   // Build UTC timestamps for startTime and endTime on that Hawaii date
   // Hawaii HH:MM → UTC = HH:MM + 10h
-  const startUtcMs = Date.UTC(year, month, day, startH + 10, startM, 0, 0);
-  const endUtcMs   = Date.UTC(year, month, day, endH   + 10, endM,   0, 0);
+  let startUtcMs = Date.UTC(year, month, day, startH + 10, startM, 0, 0);
+  let endUtcMs   = Date.UTC(year, month, day, endH   + 10, endM,   0, 0);
+
+  // If the start time is already in the past (today's date but past the window),
+  // push to next week so Google Maps can still return traffic predictions.
+  if (startUtcMs < nowUtcMs) {
+    startUtcMs += 7 * 24 * 60 * 60 * 1000;
+    endUtcMs   += 7 * 24 * 60 * 60 * 1000;
+  }
 
   if (startUtcMs >= endUtcMs) return [];
 
