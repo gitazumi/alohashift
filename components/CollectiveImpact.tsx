@@ -15,7 +15,11 @@ const COMMUTE_DAYS_PER_YEAR      = 240;   // 5 days × 48 weeks
 const AVG_FUEL_GAL_PER_CONG_MIN = 0.034; // extra gal burned in congestion vs free-flow
 const GAS_PRICE                  = 4.50;  // USD per gallon (Hawaii avg)
 const CO2_PER_CONGESTION_MIN     = 0.02;  // kg CO₂ per congestion-minute
-const TOTAL_COMMUTERS            = 10_000;
+
+// Source: HDOT HPMS Dataset (highways.hidot.hawaii.gov)
+// H1 freeway peak section AADT = 65,800 vehicles/day
+// Morning rush (6–9 AM) = ~15% of daily volume × 1.1 avg occupancy = ~10,857 commuters
+const TOTAL_COMMUTERS            = 10_857; // HDOT AADT-based estimate, H1 morning commuters
 
 function equiv(co2Kg: number): string {
   const trees = Math.round(co2Kg / 21);
@@ -183,7 +187,7 @@ export default function CollectiveImpact({
           <div>
             <p className="text-sm font-semibold text-blue-800">City-Scale Impact</p>
             <p className="text-xs text-blue-500">
-              What if many Honolulu commuters made the same timing shift?
+              What if many of the ~{TOTAL_COMMUTERS.toLocaleString()} H1 morning commuters made the same timing shift?
             </p>
           </div>
         </div>
@@ -198,7 +202,8 @@ export default function CollectiveImpact({
           </div>
           <p className="text-xs text-slate-400 mb-2">
             = <span className="font-medium text-slate-600">{city.shifters.toLocaleString()} people</span>{" "}
-            out of {TOTAL_COMMUTERS.toLocaleString()} commuters choosing a less congested departure time
+            out of <span className="font-medium text-slate-600">{TOTAL_COMMUTERS.toLocaleString()}</span> H1 morning commuters
+            (HDOT AADT data) choosing a less congested departure time
           </p>
           <input
             type="range" min={1} max={30} step={1}
@@ -243,12 +248,19 @@ export default function CollectiveImpact({
       </div>
 
       {/* ── Transparency footer ── */}
-      <div className="border-t border-slate-100 pt-4 text-xs text-slate-400 leading-relaxed">
-        <span className="font-semibold text-slate-500">Assumptions: </span>
-        {COMMUTE_DAYS_PER_YEAR} commute days/year · ${GAS_PRICE}/gal gas (Hawaii avg) ·{" "}
-        {AVG_FUEL_GAL_PER_CONG_MIN} gal extra per congestion-minute · {CO2_PER_CONGESTION_MIN} kg CO₂/congestion-min ·{" "}
-        {TOTAL_COMMUTERS.toLocaleString()} total Honolulu commuters assumed.
-        City model: reduction = 0.6 × participation × (shift/10). Simulation only — not empirical data.
+      <div className="border-t border-slate-100 pt-4 text-xs text-slate-400 leading-relaxed space-y-1">
+        <p>
+          <span className="font-semibold text-slate-500">Commuter estimate: </span>
+          H1 freeway AADT = 65,800 vehicles/day (HDOT HPMS Dataset, highways.hidot.hawaii.gov) ·
+          Morning rush 6–9 AM ≈ 15% of daily volume × 1.1 avg occupancy ={" "}
+          <span className="font-medium text-slate-500">{TOTAL_COMMUTERS.toLocaleString()} commuters</span>.
+        </p>
+        <p>
+          <span className="font-semibold text-slate-500">Other assumptions: </span>
+          {COMMUTE_DAYS_PER_YEAR} commute days/yr · ${GAS_PRICE}/gal (Hawaii avg) ·{" "}
+          {AVG_FUEL_GAL_PER_CONG_MIN} gal extra/congestion-min · {CO2_PER_CONGESTION_MIN} kg CO₂/congestion-min.
+          City model: reduction = 0.6 × participation × (shift/10). Simulation only.
+        </p>
       </div>
     </div>
   );
