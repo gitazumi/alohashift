@@ -10,23 +10,20 @@ export default function Footer() {
           <div className="text-sm text-slate-400">
             © {new Date().getFullYear()} AlohaShift. All rights reserved.
           </div>
-          <nav className="flex items-center gap-6 text-sm text-slate-500">
-            <Link
-              href="/terms"
-              className="hover:text-slate-800 transition"
-            >
+          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500 justify-center sm:justify-end">
+            <Link href="/data-sources" className="hover:text-slate-800 transition">
+              Data Sources
+            </Link>
+            <Link href="/community" className="hover:text-slate-800 transition">
+              Community Data
+            </Link>
+            <Link href="/terms" className="hover:text-slate-800 transition">
               Terms of Service
             </Link>
-            <Link
-              href="/privacy"
-              className="hover:text-slate-800 transition"
-            >
+            <Link href="/privacy" className="hover:text-slate-800 transition">
               Privacy Policy
             </Link>
-            <Link
-              href="/contact"
-              className="hover:text-slate-800 transition"
-            >
+            <Link href="/contact" className="hover:text-slate-800 transition">
               Contact
             </Link>
           </nav>
