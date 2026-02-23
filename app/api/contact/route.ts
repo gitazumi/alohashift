@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,20 +11,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.CONTACT_EMAIL_USER,
-        pass: process.env.CONTACT_EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"AlohaShift Contact" <${process.env.CONTACT_EMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from: "AlohaShift Contact <onboarding@resend.dev>",
       to: "arensawa@gmail.com",
       replyTo: email,
       subject: `[AlohaShift] ${subject}`,
-      text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px;">
           <h2 style="color: #1e293b;">New message from AlohaShift</h2>
@@ -44,6 +37,11 @@ export async function POST(request: NextRequest) {
         </div>
       `,
     });
+
+    if (error) {
+      console.error("Resend error:", error);
+      return NextResponse.json({ error: "Failed to send message." }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
