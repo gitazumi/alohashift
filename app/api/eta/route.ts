@@ -52,85 +52,84 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(mockResults);
     }
 
-    const results: ETAResult[] = [];
+    // Fetch all departure times in parallel for maximum speed
+    const results: ETAResult[] = await Promise.all(
+      departureTimes.map(async (departureTime) => {
+        const url = new URL(
+          "https://maps.googleapis.com/maps/api/distancematrix/json"
+        );
+        url.searchParams.set("origins", origin);
+        url.searchParams.set("destinations", destination);
+        url.searchParams.set("departure_time", departureTime.toString());
+        url.searchParams.set("traffic_model", "pessimistic");
+        url.searchParams.set("key", apiKey);
 
-    for (const departureTime of departureTimes) {
-      const url = new URL(
-        "https://maps.googleapis.com/maps/api/distancematrix/json"
-      );
-      url.searchParams.set("origins", origin);
-      url.searchParams.set("destinations", destination);
-      url.searchParams.set("departure_time", departureTime.toString());
-      url.searchParams.set("traffic_model", "pessimistic");
-      url.searchParams.set("key", apiKey);
+        const response = await fetch(url.toString());
+        const data: DistanceMatrixResponse = await response.json();
 
-      const response = await fetch(url.toString());
-      const data: DistanceMatrixResponse = await response.json();
+        if (data.status === "OK" && data.rows[0]?.elements[0]) {
+          const element = data.rows[0].elements[0];
+          if (element.status === "OK" && element.duration && element.duration_in_traffic) {
+            const durationSeconds = element.duration.value;
+            const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
 
-      if (data.status === "OK" && data.rows[0]?.elements[0]) {
-        const element = data.rows[0].elements[0];
-        if (element.status === "OK" && element.duration && element.duration_in_traffic) {
-          const durationSeconds = element.duration.value;
-          const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
-
-          // Graduated congestion multiplier:
-          // The heavier the congestion, the larger the correction applied.
-          // Baseline (free-flow) = 0% extra
-          // Light congestion     = +10%
-          // Moderate congestion  = +15%
-          // Heavy congestion     = +20% (peak)
-          const congestionDelay = rawDurationInTrafficSeconds - durationSeconds;
-          let durationInTrafficSeconds: number;
-          if (congestionDelay <= 0) {
-            // No congestion — use raw value as-is
-            durationInTrafficSeconds = rawDurationInTrafficSeconds;
-          } else {
-            // Congestion ratio: how much longer vs free-flow (0.0 = none, 1.0 = 2x)
-            const congestionRatio = congestionDelay / durationSeconds;
-            // Graduated multiplier: 1.10 → 1.15 → 1.20 based on congestion ratio
-            let multiplier: number;
-            if (congestionRatio < 0.20) {
-              // Light congestion (<20% slower than free-flow) → +10%
-              multiplier = 1.10;
-            } else if (congestionRatio < 0.50) {
-              // Moderate congestion (20–50% slower) → +15%
-              multiplier = 1.15;
+            // Graduated congestion multiplier:
+            // Baseline (free-flow) = 0% extra
+            // Light congestion     = +10%
+            // Moderate congestion  = +15%
+            // Heavy congestion     = +20% (peak)
+            const congestionDelay = rawDurationInTrafficSeconds - durationSeconds;
+            let durationInTrafficSeconds: number;
+            if (congestionDelay <= 0) {
+              durationInTrafficSeconds = rawDurationInTrafficSeconds;
             } else {
-              // Heavy congestion (50%+ slower = peak hour) → +20%
-              multiplier = 1.20;
+              const congestionRatio = congestionDelay / durationSeconds;
+              let multiplier: number;
+              if (congestionRatio < 0.20) {
+                multiplier = 1.10;
+              } else if (congestionRatio < 0.50) {
+                multiplier = 1.15;
+              } else {
+                multiplier = 1.20;
+              }
+              durationInTrafficSeconds = Math.round(
+                durationSeconds + congestionDelay * multiplier
+              );
             }
-            durationInTrafficSeconds = Math.round(
-              durationSeconds + congestionDelay * multiplier
-            );
+
+            const arrivalTime = departureTime + durationInTrafficSeconds;
+            return {
+              departureTime,
+              departureLabel: formatTime(departureTime),
+              arrivalTime,
+              arrivalLabel: formatTime(arrivalTime),
+              durationSeconds,
+              durationInTrafficSeconds,
+              status: "OK",
+            } as ETAResult;
+          } else {
+            return {
+              departureTime,
+              departureLabel: formatTime(departureTime),
+              arrivalTime: 0,
+              arrivalLabel: "--",
+              durationSeconds: 0,
+              durationInTrafficSeconds: 0,
+              status: data.rows[0].elements[0].status || "UNKNOWN",
+            } as ETAResult;
           }
-
-          const arrivalTime = departureTime + durationInTrafficSeconds;
-
-          results.push({
-            departureTime,
-            departureLabel: formatTime(departureTime),
-            arrivalTime,
-            arrivalLabel: formatTime(arrivalTime),
-            durationSeconds,
-            durationInTrafficSeconds,
-            status: "OK",
-          });
-        } else {
-          results.push({
-            departureTime,
-            departureLabel: formatTime(departureTime),
-            arrivalTime: 0,
-            arrivalLabel: "--",
-            durationSeconds: 0,
-            durationInTrafficSeconds: 0,
-            status: element.status || "UNKNOWN",
-          });
         }
-      }
-
-      // Small delay to avoid rate limiting
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+        return {
+          departureTime,
+          departureLabel: formatTime(departureTime),
+          arrivalTime: 0,
+          arrivalLabel: "--",
+          durationSeconds: 0,
+          durationInTrafficSeconds: 0,
+          status: "API_ERROR",
+        } as ETAResult;
+      })
+    );
 
     const validResults = results.filter((r) => r.status === "OK");
     const freeFlowDuration =
