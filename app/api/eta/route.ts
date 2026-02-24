@@ -19,35 +19,43 @@ interface DistanceMatrixResponse {
 /**
  * Honolulu Reality Correction
  *
- * Google Maps Distance Matrix API consistently underestimates travel times
- * across all Oahu routes (H1, Pali Highway, Likelike, H3, Kamehameha Hwy, etc.)
- * during peak hours. Based on real commute data:
- *   160 Polihale Pl → Mid-Pacific Institute, 6:53 AM departure
- *   → actual 62 min vs Google predicted 30 min (duration_in_traffic)
+ * Google Maps Duration Matrix API underestimates Oahu peak-hour congestion,
+ * but the degree varies by day — some days Google already reflects heavy
+ * traffic in duration_in_traffic, other days it doesn't.
  *
- * We apply a single time-of-day multiplier directly to duration_in_traffic.
+ * A fixed multiplier on duration_in_traffic causes over-correction on days
+ * when Google already accounts for congestion.
  *
- * Correction factors:
- *   Early AM  (5:00–6:29): ×1.3  — light but building traffic
- *   Peak AM   (6:30–8:59): ×1.9  — heavily congested across all routes
- *   Mid AM    (9:00–10:59): ×1.4  — post-peak, still slow
- *   Midday   (11:00–14:59): ×1.1  — near free-flow
- *   Early PM (15:00–16:29): ×1.3  — building again
- *   Peak PM  (16:30–18:59): ×1.7  — afternoon rush
- *   Evening  (19:00+):      ×1.1  — light traffic
+ * Solution: use max(traffic × trafficMultiplier, free × freeMultiplier).
+ * This anchors on the free-flow baseline on light-traffic days while still
+ * following Google's estimate when it already shows heavy congestion.
+ *
+ * Validated against real commute data:
+ *   160 Polihale Pl → Mid-Pacific Institute, 6:53 AM Monday
+ *   free=20min, traffic=30min → max(30×1.4, 20×3.0) = 60min (actual: 62min ✓)
+ *   free=20min, traffic=44min → max(44×1.4, 20×3.0) = 62min (actual: ~60min ✓)
  */
-function getHawaiiRealityMultiplier(departureTimestamp: number): number {
-  // Convert UTC timestamp to Hawaii hour (UTC-10)
+interface RealityCorrection {
+  trafficMultiplier: number; // applied to duration_in_traffic
+  freeMultiplier: number;    // applied to free-flow duration (floor)
+}
+
+function getHawaiiRealityCorrection(departureTimestamp: number): RealityCorrection {
   const hawaiiHour = ((Math.floor(departureTimestamp / 3600) - 10) % 24 + 24) % 24;
   const hawaiiMinute = Math.floor((departureTimestamp % 3600) / 60);
   const fractionalHour = hawaiiHour + hawaiiMinute / 60;
 
-  if (fractionalHour >= 6.5 && fractionalHour < 9.0)  return 1.9;  // AM peak
-  if (fractionalHour >= 16.5 && fractionalHour < 19.0) return 1.7;  // PM peak
-  if (fractionalHour >= 9.0 && fractionalHour < 11.0)  return 1.4;  // post-AM peak
-  if (fractionalHour >= 15.0 && fractionalHour < 16.5) return 1.3;  // pre-PM peak
-  if (fractionalHour >= 5.0 && fractionalHour < 6.5)   return 1.3;  // early AM
-  return 1.1;  // midday / evening
+  if (fractionalHour >= 6.5 && fractionalHour < 9.0)
+    return { trafficMultiplier: 1.4, freeMultiplier: 3.0 }; // AM peak
+  if (fractionalHour >= 16.5 && fractionalHour < 19.0)
+    return { trafficMultiplier: 1.3, freeMultiplier: 2.5 }; // PM peak
+  if (fractionalHour >= 9.0 && fractionalHour < 11.0)
+    return { trafficMultiplier: 1.2, freeMultiplier: 2.0 }; // post-AM peak
+  if (fractionalHour >= 15.0 && fractionalHour < 16.5)
+    return { trafficMultiplier: 1.2, freeMultiplier: 1.8 }; // pre-PM peak
+  if (fractionalHour >= 5.0 && fractionalHour < 6.5)
+    return { trafficMultiplier: 1.2, freeMultiplier: 1.5 }; // early AM
+  return { trafficMultiplier: 1.05, freeMultiplier: 1.2 };  // midday / evening
 }
 
 function formatTime(timestamp: number): string {
@@ -107,22 +115,14 @@ export async function POST(request: NextRequest) {
             const durationSeconds = element.duration.value;
             const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
 
-            // DEBUG: log raw Google API values
-            const hawaiiHourDbg = ((Math.floor(departureTime / 3600) - 10) % 24 + 24) % 24;
-            const hawaiiMinDbg  = Math.floor((departureTime % 3600) / 60);
-            console.log(`[ETA DEBUG] Hawaii ${hawaiiHourDbg}:${String(hawaiiMinDbg).padStart(2,"0")} | free=${Math.round(durationSeconds/60)}min | traffic=${Math.round(rawDurationInTrafficSeconds/60)}min`);
-
-            // Apply Honolulu Reality Correction factor directly to duration_in_traffic.
-            // Google Maps consistently underestimates Oahu peak-hour congestion across
-            // all routes (H1, Pali, Likelike, H3, etc.).
-            // Real commute data: 6:53 AM departure → actual 62 min, Google predicted 30 min.
-            // We apply a single time-of-day multiplier to duration_in_traffic only.
-            // (Previously a two-step graduated multiplier was applied first, causing
-            //  double-counting and over-estimated times of 90+ min.)
-            const realityMultiplier = getHawaiiRealityMultiplier(departureTime);
-            const durationInTrafficSeconds = Math.round(
-              rawDurationInTrafficSeconds * realityMultiplier
-            );
+            // Apply Honolulu Reality Correction:
+            // max(traffic × trafficMultiplier, free × freeMultiplier)
+            // This avoids over-correction on days when Google already reflects congestion.
+            const correction = getHawaiiRealityCorrection(departureTime);
+            const durationInTrafficSeconds = Math.round(Math.max(
+              rawDurationInTrafficSeconds * correction.trafficMultiplier,
+              durationSeconds * correction.freeMultiplier
+            ));
 
             const arrivalTime = departureTime + durationInTrafficSeconds;
             return {

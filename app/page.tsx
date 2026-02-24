@@ -151,7 +151,6 @@ export default function HomePage() {
         })
       : null;
 
-
   return (
     <main className="min-h-screen bg-slate-50">
       <HeroSection />
@@ -197,9 +196,6 @@ export default function HomePage() {
               </span>
             </div>
 
-            {/* Traffic Incident Banner */}
-            <IncidentBanner incidents={incidents} isLoading={incidentsLoading} />
-
             {/* Result Cards Grid */}
             <section>
               <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-4">
@@ -222,7 +218,10 @@ export default function HomePage() {
               desiredArrival={result.desiredArrival}
             />
 
-            {/* AI Comment */}
+            {/* Traffic Incident Banner — between Traffic Curve and Pattern Analysis */}
+            <IncidentBanner incidents={incidents} isLoading={incidentsLoading} />
+
+            {/* AI Comment (Pattern Analysis) */}
             {aiComment && <AIComment comment={aiComment} />}
 
             {/* Collective Impact Simulator */}
@@ -234,7 +233,6 @@ export default function HomePage() {
               const bestIdx  = durations.indexOf(Math.min(...durations));
               const worstSlot = result.stressData[worstIdx];
               const bestSlot  = result.stressData[bestIdx];
-              // Minutes saved by choosing best slot over worst slot
               const personalSavedMin = Math.max(0, durations[worstIdx] - durations[bestIdx]);
               return (
                 <CollectiveImpact
@@ -247,26 +245,6 @@ export default function HomePage() {
               );
             })()}
 
-
-            {/* Community Data CTA — above footer */}
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
-              <div className="flex-1 text-center sm:text-left">
-                <p className="text-sm font-semibold text-emerald-800 mb-0.5">
-                  🤙 Help make AlohaShift more accurate
-                </p>
-                <p className="text-xs text-emerald-700 leading-relaxed">
-                  Share your real commute times and see how predictions compare to reality.
-                  Takes less than 2 minutes · No account needed.
-                </p>
-              </div>
-              <Link
-                href="/community"
-                className="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm whitespace-nowrap"
-              >
-                Submit Your Commute Data →
-              </Link>
-            </div>
-
             {/* Philosophy footer */}
             <div className="text-center py-8 border-t border-slate-200">
               <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
@@ -277,6 +255,26 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        {/* Community Data CTA — always visible, just above the page footer */}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-sm font-semibold text-emerald-800 mb-0.5">
+              🤙 Help make AlohaShift more accurate
+            </p>
+            <p className="text-xs text-emerald-700 leading-relaxed">
+              Share your real commute times and see how predictions compare to reality.
+              Takes less than 2 minutes · No account needed.
+            </p>
+          </div>
+          <Link
+            href="/community"
+            className="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm whitespace-nowrap"
+          >
+            Submit Your Commute Data →
+          </Link>
+        </div>
+
       </div>
     </main>
   );
