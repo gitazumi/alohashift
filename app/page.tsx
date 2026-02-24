@@ -8,6 +8,7 @@ import ResultCard from "@/components/ResultCard";
 import TrafficCurve from "@/components/TrafficCurve";
 import AIComment from "@/components/AIComment";
 import CollectiveImpact from "@/components/CollectiveImpact";
+import RouteMap from "@/components/RouteMap";
 import { calculateStressData, generateDepartureTimes } from "@/lib/stressIndex";
 import { generateAIComment } from "@/lib/aiComments";
 import type { ETAResponse, FormValues, StressData } from "@/types";
@@ -194,6 +195,12 @@ export default function HomePage() {
                 ))}
               </div>
             </section>
+
+            {/* Route Map */}
+            <RouteMap
+              origin={result.origin}
+              destination={result.destination}
+            />
 
             {/* Traffic Curve */}
             <TrafficCurve
