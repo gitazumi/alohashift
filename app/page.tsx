@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import InputForm from "@/components/InputForm";
 import ResultCard from "@/components/ResultCard";
@@ -68,8 +69,18 @@ export default function HomePage() {
       const nowHawaiiMs = nowUtcMs + HAWAII_OFFSET_MS;
       const nowHawaii = new Date(nowHawaiiMs);
       const hawaiiDayOfWeek = nowHawaii.getUTCDay();
-      let daysAhead = (values.targetDay - hawaiiDayOfWeek + 7) % 7;
-      const targetHawaii = new Date(nowHawaiiMs + daysAhead * 24 * 60 * 60 * 1000);
+      const daysAhead = (values.targetDay - hawaiiDayOfWeek + 7) % 7;
+      // IMPORTANT: Normalize to Hawaii midnight before extracting year/month/day.
+      // When Hawaii local time is past 14:00, nowHawaiiMs in UTC rolls to the next
+      // calendar day, causing getUTCDate() to return the wrong date.
+      const hawaiiMidnightMs = nowHawaiiMs - (
+        nowHawaii.getUTCHours() * 3600000 +
+        nowHawaii.getUTCMinutes() * 60000 +
+        nowHawaii.getUTCSeconds() * 1000 +
+        nowHawaii.getUTCMilliseconds()
+      );
+      const targetMidnightMs = hawaiiMidnightMs + daysAhead * 24 * 60 * 60 * 1000;
+      const targetHawaii = new Date(targetMidnightMs);
       const year  = targetHawaii.getUTCFullYear();
       const month = targetHawaii.getUTCMonth();
       const day   = targetHawaii.getUTCDate();
@@ -122,6 +133,25 @@ export default function HomePage() {
         {/* Input Form */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
+        </div>
+
+        {/* Community Data CTA */}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-sm font-semibold text-emerald-800 mb-0.5">
+              🤙 Help make AlohaShift more accurate
+            </p>
+            <p className="text-xs text-emerald-700 leading-relaxed">
+              Share your real commute times and see how predictions compare to reality.
+              Takes less than 2 minutes · No account needed.
+            </p>
+          </div>
+          <Link
+            href="/community"
+            className="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm whitespace-nowrap"
+          >
+            Submit Your Commute Data →
+          </Link>
         </div>
 
         {/* Error */}

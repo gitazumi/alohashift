@@ -161,8 +161,12 @@ export function generateDepartureTimes(
   let daysAhead = (targetDay - hawaiiDayOfWeek + 7) % 7;
 
   // Build Hawaii date for the target day (year/month/day in Hawaii)
-  const targetHawaiiMs = nowHawaiiMs + daysAhead * 24 * 60 * 60 * 1000;
-  const targetHawaii = new Date(targetHawaiiMs);
+  // IMPORTANT: Use Hawaii midnight (00:00 HST) as the reference point to get the
+  // correct calendar date. Hawaii midnight = UTC 10:00 of the same day.
+  // Using nowHawaiiMs directly can give wrong UTC date when Hawaii time is > 14:00.
+  const hawaiiMidnightMs = nowHawaiiMs - (nowHawaii.getUTCHours() * 3600000 + nowHawaii.getUTCMinutes() * 60000 + nowHawaii.getUTCSeconds() * 1000 + nowHawaii.getUTCMilliseconds());
+  const targetMidnightMs = hawaiiMidnightMs + daysAhead * 24 * 60 * 60 * 1000;
+  const targetHawaii = new Date(targetMidnightMs);
   const year  = targetHawaii.getUTCFullYear();
   const month = targetHawaii.getUTCMonth();
   const day   = targetHawaii.getUTCDate();
