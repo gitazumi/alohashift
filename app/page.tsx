@@ -8,12 +8,9 @@ import ResultCard from "@/components/ResultCard";
 import TrafficCurve from "@/components/TrafficCurve";
 import AIComment from "@/components/AIComment";
 import CollectiveImpact from "@/components/CollectiveImpact";
-import IncidentBanner from "@/components/IncidentBanner";
 import { calculateStressData, generateDepartureTimes } from "@/lib/stressIndex";
 import { generateAIComment } from "@/lib/aiComments";
 import type { ETAResponse, FormValues, StressData } from "@/types";
-import type { TrafficIncident } from "@/app/api/incidents/route";
-
 interface ResultState {
   stressData: StressData[];
   origin: string;
@@ -26,16 +23,10 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ResultState | null>(null);
 
-  // Incident state — fetched in parallel with ETA
-  const [incidents, setIncidents] = useState<TrafficIncident[]>([]);
-  const [incidentsLoading, setIncidentsLoading] = useState(false);
-
   const handleSubmit = async (values: FormValues) => {
     setIsLoading(true);
     setError(null);
     setResult(null);
-    setIncidents([]);
-    setIncidentsLoading(true);
 
     try {
       const departureTimes = generateDepartureTimes(
@@ -49,33 +40,15 @@ export default function HomePage() {
         throw new Error("Please set a valid departure window (start time must be before end time).");
       }
 
-      // ── Fetch ETA and incidents in parallel ───────────────────────────
-      const [response, incidentRes] = await Promise.all([
-        fetch("/api/eta", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            origin: values.origin,
-            destination: values.destination,
-            departureTimes,
-          }),
+      const response = await fetch("/api/eta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: values.origin,
+          destination: values.destination,
+          departureTimes,
         }),
-        fetch("/api/incidents", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            origin: values.origin,
-            destination: values.destination,
-          }),
-        }).catch(() => null), // don't block ETA if incidents fail
-      ]);
-
-      // Handle incidents (non-blocking)
-      if (incidentRes?.ok) {
-        const incData = await incidentRes.json();
-        setIncidents(incData.incidents ?? []);
-      }
-      setIncidentsLoading(false);
+      });
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -145,7 +118,6 @@ export default function HomePage() {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-      setIncidentsLoading(false);
     } finally {
       setIsLoading(false);
     }
@@ -228,9 +200,6 @@ export default function HomePage() {
               stressData={result.stressData}
               desiredArrival={result.desiredArrival}
             />
-
-            {/* Traffic Incident Banner — between Traffic Curve and Pattern Analysis */}
-            <IncidentBanner incidents={incidents} isLoading={incidentsLoading} />
 
             {/* AI Comment (Pattern Analysis) */}
             {aiComment && <AIComment comment={aiComment} />}

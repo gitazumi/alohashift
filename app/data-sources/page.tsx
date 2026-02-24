@@ -140,58 +140,7 @@ export default function DataSourcesPage() {
           </div>
         </section>
 
-        {/* Section 3: HPD Traffic Incidents */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
-          <div className="flex items-start gap-4">
-            <span className="text-2xl">🚨</span>
-            <div>
-              <h2 className="text-lg font-semibold text-slate-800">HPD Traffic Incidents</h2>
-              <span className="inline-block mt-1 text-xs font-medium bg-red-100 text-red-700 rounded-full px-2 py-0.5">Real-Time — Live Incident Alerts</span>
-            </div>
-          </div>
-          <p className="text-sm text-slate-600 leading-relaxed">
-            AlohaShift checks the Honolulu Police Department&apos;s live traffic incident feed
-            every time you search. If any crashes, road hazards, or debris are reported
-            within 3 km of your route today, they appear as a warning banner above your
-            departure windows — so you know what&apos;s actually on the road right now.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Source</p>
-              <p className="text-slate-700">Honolulu Police Department (HPD)</p>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Portal</p>
-              <p className="text-slate-700 font-mono text-xs break-all">data.honolulu.gov · dataset ykb6-n5th</p>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Update Frequency</p>
-              <p className="text-slate-700">Every 5 minutes (live HPD dispatch)</p>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Coverage</p>
-              <p className="text-slate-700">All Oahu roads — not limited to freeways</p>
-            </div>
-          </div>
-          <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 space-y-1">
-            <p className="font-semibold text-slate-700 mb-1">How it works</p>
-            <p>① Fetch today&apos;s incident log from Honolulu Open Data Portal (Socrata API)</p>
-            <p>② Geocode each incident address using Google Maps Geocoding API</p>
-            <p>③ Filter to incidents within <strong>3 km</strong> of your route using Haversine distance</p>
-            <p>④ Display color-coded by severity: <span className="text-red-600 font-semibold">red</span> = fatal/injury, <span className="text-orange-600 font-semibold">orange</span> = crash, <span className="text-amber-600 font-semibold">yellow</span> = hazard</p>
-          </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-            <span className="font-semibold">Incident types shown:</span> MVC (Motor Vehicle Crash),
-            MVC with Injuries, MVC Fatal, Hit &amp; Run, Vehicle Towed, Road Hazard, Debris in Roadway, Flooding.
-            Parking complaints and non-traffic incidents are excluded.
-          </div>
-          <a href="https://data.honolulu.gov/Public-Safety/Traffic-Incidents/ykb6-n5th" target="_blank" rel="noopener noreferrer"
-            className="text-xs text-blue-500 hover:underline">
-            → Honolulu Open Data — Traffic Incidents Dataset
-          </a>
-        </section>
-
-        {/* Section 4: HDOT AADT */}
+        {/* Section 3: HDOT AADT */}
         <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
           <div className="flex items-start gap-4">
             <span className="text-2xl">🏛️</span>
@@ -287,7 +236,7 @@ export default function DataSourcesPage() {
         {/* Footer note */}
         <p className="text-xs text-slate-400 text-center leading-relaxed">
           AlohaShift is an independent student project built for the 2026 Congressional App Challenge.
-          We are not affiliated with Google, TomTom, HDOT, or the Honolulu Police Department.
+          We are not affiliated with Google, TomTom, or HDOT.
           All data is used in accordance with respective terms of service.
         </p>
 
