@@ -59,15 +59,9 @@ export default function DataSourcesPage() {
             <p>⑤ Future searches on overlapping routes draw from your data to calibrate predictions</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">対応している主要道路</p>
-              <p className="text-slate-700">H1, H2, H3, Pali Highway, Likelike Highway, Kalanianaole Highway, Kamehameha Highway, Nimitz Highway, Farrington Highway など</p>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">データ品質管理</p>
-              <p className="text-slate-700">5分未満・4時間超の投稿は自動的に除外されます</p>
-            </div>
+          <div className="bg-slate-50 rounded-xl p-3 text-sm">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Corridors Tracked</p>
+            <p className="text-slate-700">H1, H2, H3, Pali Highway, Likelike Highway, Kalanianaole Highway, Kamehameha Highway, Nimitz Highway, Farrington Highway, and more</p>
           </div>
 
           <Link
