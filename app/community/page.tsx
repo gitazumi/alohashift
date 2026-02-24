@@ -6,6 +6,13 @@ import PlaceAutocomplete from "@/components/PlaceAutocomplete";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+// Get today's day name in Hawaii Standard Time (UTC-10)
+function getTodayHawaii(): string {
+  const hawaiiMs = Date.now() + (-10 * 60 * 60 * 1000);
+  const dayIndex = new Date(hawaiiMs).getUTCDay();
+  return DAYS[dayIndex];
+}
+
 // Parse "HH:MM" (from <input type="time">) → display "6:53 AM"
 function formatTime(hhmm: string): string {
   if (!hhmm) return "";
@@ -31,7 +38,7 @@ function calcActualMinutes(dep: string, arr: string): number | null {
 
 export default function CommunityPage() {
   const [form, setForm] = useState({
-    dayOfWeek: "Monday",
+    dayOfWeek: getTodayHawaii(),
     departureTime: "",  // "HH:MM" from <input type="time">
     arrivalTime: "",    // "HH:MM" from <input type="time">
     from: "",
