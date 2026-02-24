@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { dayOfWeek, departureTime, from, to, actualMinutes, alohaShiftMinutes, notes, email } = body;
+    const { dayOfWeek, departureTime, from, to, actualMinutes, alohaShiftMinutes, notes } = body;
 
     if (!from || !to || !actualMinutes || !departureTime) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
         diff_minutes: diff,
         diff_pct: diffPct,
         notes: notes || null,
-        email: email || null,
       });
 
     if (dbError) {
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
     await resend.emails.send({
       from: "AlohaShift Community <onboarding@resend.dev>",
       to: "arensawa@gmail.com",
-      replyTo: email || "noreply@alohashift.com",
+      replyTo: "noreply@alohashift.com",
       subject: `[AlohaShift Community] New commute report: ${from} → ${to}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px;">
@@ -95,12 +94,6 @@ export async function POST(request: NextRequest) {
             <tr style="background:#f8fafc;">
               <td style="padding:8px 12px; color:#64748b; font-weight:600;">Notes</td>
               <td style="padding:8px 12px; color:#1e293b;">${notes}</td>
-            </tr>
-            ` : ""}
-            ${email ? `
-            <tr>
-              <td style="padding:8px 12px; color:#64748b; font-weight:600;">Email</td>
-              <td style="padding:8px 12px; color:#1e293b;">${email}</td>
             </tr>
             ` : ""}
           </table>
