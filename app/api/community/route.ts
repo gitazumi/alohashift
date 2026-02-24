@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,10 +12,39 @@ export async function POST(request: NextRequest) {
     }
 
     const actual = parseFloat(actualMinutes);
-    const predicted = parseFloat(alohaShiftMinutes) || null;
-    const diff = predicted ? Math.round(actual - predicted) : null;
-    const diffPct = predicted ? Math.round(((actual - predicted) / predicted) * 100) : null;
+    const predicted = alohaShiftMinutes ? parseFloat(alohaShiftMinutes) : null;
+    const diff = predicted !== null ? Math.round(actual - predicted) : null;
+    const diffPct = predicted !== null && predicted > 0
+      ? Math.round(((actual - predicted) / predicted) * 100)
+      : null;
 
+    // ── 1. Save to Supabase ──────────────────────────────────────────────
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_ANON_KEY!
+    );
+
+    const { error: dbError } = await supabase
+      .from("commute_reports")
+      .insert({
+        day_of_week: dayOfWeek,
+        departure_time: departureTime,
+        from_location: from,
+        to_location: to,
+        actual_minutes: actual,
+        predicted_minutes: predicted,
+        diff_minutes: diff,
+        diff_pct: diffPct,
+        notes: notes || null,
+        email: email || null,
+      });
+
+    if (dbError) {
+      console.error("Supabase insert error:", dbError);
+      // Don't block — still send email even if DB fails
+    }
+
+    // ── 2. Send email notification via Resend ────────────────────────────
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     await resend.emails.send({
@@ -25,6 +55,7 @@ export async function POST(request: NextRequest) {
       html: `
         <div style="font-family: sans-serif; max-width: 600px;">
           <h2 style="color: #1e293b;">🚗 New Community Commute Report</h2>
+          <p style="color:#64748b; font-size:13px;">Saved to Supabase ${dbError ? "❌ (DB error)" : "✅"}</p>
 
           <table style="width:100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
             <tr style="background:#f8fafc;">
@@ -56,7 +87,7 @@ export async function POST(request: NextRequest) {
               <td style="padding:8px 12px; color:#64748b; font-weight:600;">Difference</td>
               <td style="padding:8px 12px; font-weight:bold; color:${diff > 5 ? "#dc2626" : diff < -5 ? "#2563eb" : "#16a34a"};">
                 ${diff > 0 ? "+" : ""}${diff} min (${diff > 0 ? "+" : ""}${diffPct}%)
-                ${diff > 5 ? " — AlohaShift underestimated" : diff < -5 ? " — AlohaShift overestimated" : " — Good match!"}
+                ${diff > 5 ? " — underestimated" : diff < -5 ? " — overestimated" : " — Good match!"}
               </td>
             </tr>
             ` : ""}
@@ -75,7 +106,7 @@ export async function POST(request: NextRequest) {
           </table>
 
           <p style="font-size:12px; color:#94a3b8;">
-            Submitted via AlohaShift Community Data — alohashift.com/community
+            View all reports: supabase.com/dashboard/project/jftakglxbywzmwhwhsvo/editor
           </p>
         </div>
       `,
