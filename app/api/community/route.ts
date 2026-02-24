@@ -2,6 +2,79 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
+// ── Route segment extraction ─────────────────────────────────────────────────
+//
+// Calls Google Directions API and extracts the highway/road names used.
+// This allows cross-route data reuse: a report from Ewa Beach → Downtown
+// shares H1 segment data with Kapolei → UH Manoa, improving accuracy for
+// all routes that use the same corridors.
+
+interface DirectionsRoute {
+  legs: {
+    steps: {
+      html_instructions: string;
+      distance: { value: number };
+    }[];
+  }[];
+}
+
+interface DirectionsResponse {
+  status: string;
+  routes: DirectionsRoute[];
+}
+
+const OAHU_CORRIDORS = [
+  { pattern: /\bH-?1\b/i,                label: "H1" },
+  { pattern: /\bH-?2\b/i,                label: "H2" },
+  { pattern: /\bH-?3\b/i,                label: "H3" },
+  { pattern: /pali\s+hwy|pali\s+highway/i, label: "Pali Highway" },
+  { pattern: /likelike\s+hwy|likelike\s+highway/i, label: "Likelike Highway" },
+  { pattern: /kalanianaole\s+hwy|kalanianaole\s+highway|72/i, label: "Kalanianaole Highway" },
+  { pattern: /kamehameha\s+hwy|kamehameha\s+highway|99/i, label: "Kamehameha Highway" },
+  { pattern: /moanalua\s+fwy|moanalua\s+freeway/i, label: "Moanalua Freeway" },
+  { pattern: /nimitz\s+hwy|nimitz\s+highway/i, label: "Nimitz Highway" },
+  { pattern: /queen\s+ka['']ahumanu|queen\s+kaahumanu/i, label: "Queen Kaahumanu Highway" },
+  { pattern: /farrington\s+hwy|farrington\s+highway/i, label: "Farrington Highway" },
+  { pattern: /wilikina\s+dr|wilikina\s+drive/i, label: "Wilikina Drive" },
+];
+
+async function fetchRouteSegments(
+  origin: string,
+  destination: string,
+  apiKey: string
+): Promise<string[]> {
+  const url = new URL("https://maps.googleapis.com/maps/api/directions/json");
+  url.searchParams.set("origin", origin);
+  url.searchParams.set("destination", destination);
+  url.searchParams.set("key", apiKey);
+
+  const res = await fetch(url.toString());
+  const data: DirectionsResponse = await res.json();
+
+  if (data.status !== "OK" || !data.routes[0]) return [];
+
+  // Collect all step instructions and road names
+  const allText = data.routes[0].legs
+    .flatMap(leg => leg.steps)
+    .map(step => step.html_instructions)
+    .join(" ");
+
+  // Strip HTML tags
+  const plainText = allText.replace(/<[^>]+>/g, " ");
+
+  // Match against known Oahu corridors
+  const segments = new Set<string>();
+  for (const corridor of OAHU_CORRIDORS) {
+    if (corridor.pattern.test(plainText)) {
+      segments.add(corridor.label);
+    }
+  }
+
+  return Array.from(segments);
+}
+
+// ── POST handler ─────────────────────────────────────────────────────────────
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -18,7 +91,18 @@ export async function POST(request: NextRequest) {
       ? Math.round(((actual - predicted) / predicted) * 100)
       : null;
 
-    // ── 1. Save to Supabase ──────────────────────────────────────────────
+    // ── 1. Fetch route segments in background (non-blocking for user) ─────
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY ?? "";
+    let routeSegments: string[] = [];
+    try {
+      if (apiKey && apiKey !== "your_api_key_here") {
+        routeSegments = await fetchRouteSegments(from, to, apiKey);
+      }
+    } catch (segErr) {
+      console.warn("Route segment fetch failed (non-blocking):", segErr);
+    }
+
+    // ── 2. Save to Supabase ───────────────────────────────────────────────
     const supabase = createClient(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_ANON_KEY!
@@ -36,14 +120,14 @@ export async function POST(request: NextRequest) {
         diff_minutes: diff,
         diff_pct: diffPct,
         notes: notes || null,
+        route_segments: routeSegments,
       });
 
     if (dbError) {
       console.error("Supabase insert error:", dbError);
-      // Don't block — still send email even if DB fails
     }
 
-    // ── 2. Send email notification via Resend ────────────────────────────
+    // ── 3. Send email notification via Resend ─────────────────────────────
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     await resend.emails.send({
@@ -78,8 +162,8 @@ export async function POST(request: NextRequest) {
               <td style="padding:8px 12px; color:#1e293b; font-weight:bold;">${actual} min</td>
             </tr>
             <tr>
-              <td style="padding:8px 12px; color:#64748b; font-weight:600;">AlohaShift Predicted</td>
-              <td style="padding:8px 12px; color:#1e293b;">${predicted !== null ? `${predicted} min` : "Not provided"}</td>
+              <td style="padding:8px 12px; color:#64748b; font-weight:600;">Route Segments</td>
+              <td style="padding:8px 12px; color:#1e293b;">${routeSegments.length > 0 ? routeSegments.join(", ") : "—"}</td>
             </tr>
             ${diff !== null ? `
             <tr style="background:${diff > 5 ? "#fef2f2" : diff < -5 ? "#eff6ff" : "#f0fdf4"};">
