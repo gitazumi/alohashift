@@ -24,7 +24,8 @@ function calcActualMinutes(dep: string, arr: string): number | null {
   const [ah, am] = arr.split(":").map(Number);
   let diff = (ah * 60 + am) - (dh * 60 + dm);
   if (diff <= 0) diff += 24 * 60;
-  if (diff > 300) return null; // sanity: more than 5h is probably wrong
+  if (diff < 5) return null;   // less than 5 min is not a real commute
+  if (diff > 240) return null; // more than 4h is probably wrong
   return diff;
 }
 
@@ -50,7 +51,7 @@ export default function CommunityPage() {
       return;
     }
     if (actualMinutes === null) {
-      setErrorMsg("Travel time looks incorrect. Please check your departure and arrival times.");
+      setErrorMsg("Travel time must be between 5 and 240 minutes. Please check your times.");
       return;
     }
     setStatus("submitting");

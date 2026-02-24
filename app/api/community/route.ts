@@ -85,6 +85,20 @@ export async function POST(request: NextRequest) {
     }
 
     const actual = parseFloat(actualMinutes);
+
+    if (isNaN(actual) || actual < 5 || actual > 240) {
+      return NextResponse.json(
+        { error: "Travel time must be between 5 and 240 minutes." },
+        { status: 400 }
+      );
+    }
+
+    if (from.trim().toLowerCase() === to.trim().toLowerCase()) {
+      return NextResponse.json(
+        { error: "Departure and destination must be different." },
+        { status: 400 }
+      );
+    }
     const predicted = alohaShiftMinutes ? parseFloat(alohaShiftMinutes) : null;
     const diff = predicted !== null ? Math.round(actual - predicted) : null;
     const diffPct = predicted !== null && predicted > 0
