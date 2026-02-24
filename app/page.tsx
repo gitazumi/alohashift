@@ -162,25 +162,6 @@ export default function HomePage() {
           <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
 
-        {/* Community Data CTA */}
-        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
-          <div className="flex-1 text-center sm:text-left">
-            <p className="text-sm font-semibold text-emerald-800 mb-0.5">
-              🤙 Help make AlohaShift more accurate
-            </p>
-            <p className="text-xs text-emerald-700 leading-relaxed">
-              Share your real commute times and see how predictions compare to reality.
-              Takes less than 2 minutes · No account needed.
-            </p>
-          </div>
-          <Link
-            href="/community"
-            className="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm whitespace-nowrap"
-          >
-            Submit Your Commute Data →
-          </Link>
-        </div>
-
         {/* Error */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-sm text-red-600">
@@ -266,6 +247,25 @@ export default function HomePage() {
               );
             })()}
 
+
+            {/* Community Data CTA — above footer */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex-1 text-center sm:text-left">
+                <p className="text-sm font-semibold text-emerald-800 mb-0.5">
+                  🤙 Help make AlohaShift more accurate
+                </p>
+                <p className="text-xs text-emerald-700 leading-relaxed">
+                  Share your real commute times and see how predictions compare to reality.
+                  Takes less than 2 minutes · No account needed.
+                </p>
+              </div>
+              <Link
+                href="/community"
+                className="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm whitespace-nowrap"
+              >
+                Submit Your Commute Data →
+              </Link>
+            </div>
 
             {/* Philosophy footer */}
             <div className="text-center py-8 border-t border-slate-200">

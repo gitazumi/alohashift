@@ -17,16 +17,19 @@ interface DistanceMatrixResponse {
 }
 
 /**
- * Hawaii H1 Freeway Reality Correction
+ * Honolulu Reality Correction
  *
  * Google Maps Distance Matrix API consistently underestimates travel times
- * on Oahu's H1 freeway corridor during peak hours. Based on real commute data
- * (Kapolei → Honolulu, 6:53 AM departure = 62 min actual vs 30 min API prediction),
- * we apply a time-of-day correction factor to bring predictions closer to reality.
+ * across all Oahu routes (H1, Pali Highway, Likelike, H3, Kamehameha Hwy, etc.)
+ * during peak hours. Based on real commute data:
+ *   160 Polihale Pl → Mid-Pacific Institute, 6:53 AM departure
+ *   → actual 62 min vs Google predicted 30 min (duration_in_traffic)
  *
- * Correction factors (applied to duration_in_traffic):
+ * We apply a single time-of-day multiplier directly to duration_in_traffic.
+ *
+ * Correction factors:
  *   Early AM  (5:00–6:29): ×1.3  — light but building traffic
- *   Peak AM   (6:30–8:59): ×1.9  — H1 freeway heavily congested
+ *   Peak AM   (6:30–8:59): ×1.9  — heavily congested across all routes
  *   Mid AM    (9:00–10:59): ×1.4  — post-peak, still slow
  *   Midday   (11:00–14:59): ×1.1  — near free-flow
  *   Early PM (15:00–16:29): ×1.3  — building again
@@ -104,33 +107,16 @@ export async function POST(request: NextRequest) {
             const durationSeconds = element.duration.value;
             const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
 
-            // Step 1: Apply graduated congestion multiplier
-            // (corrects for Google's optimistic base estimate)
-            const congestionDelay = rawDurationInTrafficSeconds - durationSeconds;
-            let adjustedDurationInTrafficSeconds: number;
-            if (congestionDelay <= 0) {
-              adjustedDurationInTrafficSeconds = rawDurationInTrafficSeconds;
-            } else {
-              const congestionRatio = congestionDelay / durationSeconds;
-              let multiplier: number;
-              if (congestionRatio < 0.20) {
-                multiplier = 1.10;
-              } else if (congestionRatio < 0.50) {
-                multiplier = 1.15;
-              } else {
-                multiplier = 1.20;
-              }
-              adjustedDurationInTrafficSeconds = Math.round(
-                durationSeconds + congestionDelay * multiplier
-              );
-            }
-
-            // Step 2: Apply Hawaii H1 reality correction factor
-            // Google Maps consistently underestimates Oahu peak-hour congestion.
-            // Real commute data shows ~1.9x correction needed during AM peak (6:30–9:00).
+            // Apply Honolulu Reality Correction factor directly to duration_in_traffic.
+            // Google Maps consistently underestimates Oahu peak-hour congestion across
+            // all routes (H1, Pali, Likelike, H3, etc.).
+            // Real commute data: 6:53 AM departure → actual 62 min, Google predicted 30 min.
+            // We apply a single time-of-day multiplier to duration_in_traffic only.
+            // (Previously a two-step graduated multiplier was applied first, causing
+            //  double-counting and over-estimated times of 90+ min.)
             const realityMultiplier = getHawaiiRealityMultiplier(departureTime);
             const durationInTrafficSeconds = Math.round(
-              adjustedDurationInTrafficSeconds * realityMultiplier
+              rawDurationInTrafficSeconds * realityMultiplier
             );
 
             const arrivalTime = departureTime + durationInTrafficSeconds;
