@@ -111,9 +111,20 @@ export default function HomePage() {
       const month = targetHawaii.getUTCMonth();
       const day   = targetHawaii.getUTCDate();
       // Hawaii HH:MM → UTC = HH:MM + 10h
-      const desiredArrivalTimestamp = Math.floor(
+      let desiredArrivalTimestamp = Math.floor(
         Date.UTC(year, month, day, hours + 10, minutes, 0, 0) / 1000
       );
+
+      // generateDepartureTimes pushes timestamps +7 days when the start time
+      // is already in the past. desiredArrivalTimestamp must follow the same
+      // shift — otherwise all arrival times will be later than the "today"
+      // desired arrival and every slot shows latenessRisk=red.
+      const startH = Number(values.startTime.split(":")[0]);
+      const startM = Number(values.startTime.split(":")[1]);
+      const startUtcMs = Date.UTC(year, month, day, startH + 10, startM, 0, 0);
+      if (startUtcMs < nowUtcMs) {
+        desiredArrivalTimestamp += 7 * 24 * 60 * 60;
+      }
 
       const stressData = calculateStressData(
         data.results,
