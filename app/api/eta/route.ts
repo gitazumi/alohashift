@@ -17,46 +17,28 @@ interface DistanceMatrixResponse {
 }
 
 /**
- * Honolulu Reality Correction
+ * Honolulu Reality Correction — Analysis & Decision
  *
- * Google Maps Duration Matrix API underestimates Oahu peak-hour congestion,
- * but the degree varies by day — some days Google already reflects heavy
- * traffic in duration_in_traffic, other days it doesn't.
+ * Real commute data (160 Polihale Pl → Mid-Pacific Institute, Monday AM):
+ *   6:30 AM: Google traffic=26min, actual=25min  → ratio=1.30, needs ×0.96 (no correction)
+ *   6:53 AM: Google traffic=30min, actual=62min  → ratio=1.50, needs ×2.07
+ *   7:00 AM: Google traffic=38min, actual=60min  → ratio=1.90, needs ×1.58
+ *   7:10 AM: Google traffic=44min, actual=62min  → ratio=2.19, needs ×1.41
  *
- * A fixed multiplier on duration_in_traffic causes over-correction on days
- * when Google already accounts for congestion.
+ * Key insight: the required multiplier is NOT monotone with time-of-day —
+ * it depends on how much congestion Google has already "baked in" on that
+ * specific day. A fixed multiplier either over-corrects light days (6:30 AM)
+ * or under-corrects heavy days (6:53 AM). A free-flow floor (×3.0) flattens
+ * all slots to ~60 min regardless of actual conditions.
  *
- * Solution: use max(traffic × trafficMultiplier, free × freeMultiplier).
- * This anchors on the free-flow baseline on light-traffic days while still
- * following Google's estimate when it already shows heavy congestion.
+ * Decision: use Google duration_in_traffic directly without correction.
+ * - Light days (6:30 AM): 26min → displayed 26min, actual 25min (error 1min ✓)
+ * - Heavy days (7:10 AM): 44min → displayed 44min, actual 62min (error 18min)
  *
- * Validated against real commute data:
- *   160 Polihale Pl → Mid-Pacific Institute, 6:53 AM Monday
- *   free=20min, traffic=30min → max(30×1.4, 20×3.0) = 60min (actual: 62min ✓)
- *   free=20min, traffic=44min → max(44×1.4, 20×3.0) = 62min (actual: ~60min ✓)
+ * The remaining gap on heavy days will be closed as community data accumulates
+ * and per-route calibration becomes possible. A single scalar multiplier
+ * cannot solve the day-to-day variance in Google's own traffic model.
  */
-interface RealityCorrection {
-  trafficMultiplier: number; // applied to duration_in_traffic
-  freeMultiplier: number;    // applied to free-flow duration (floor)
-}
-
-function getHawaiiRealityCorrection(departureTimestamp: number): RealityCorrection {
-  const hawaiiHour = ((Math.floor(departureTimestamp / 3600) - 10) % 24 + 24) % 24;
-  const hawaiiMinute = Math.floor((departureTimestamp % 3600) / 60);
-  const fractionalHour = hawaiiHour + hawaiiMinute / 60;
-
-  if (fractionalHour >= 6.5 && fractionalHour < 9.0)
-    return { trafficMultiplier: 1.4, freeMultiplier: 3.0 }; // AM peak
-  if (fractionalHour >= 16.5 && fractionalHour < 19.0)
-    return { trafficMultiplier: 1.3, freeMultiplier: 2.5 }; // PM peak
-  if (fractionalHour >= 9.0 && fractionalHour < 11.0)
-    return { trafficMultiplier: 1.2, freeMultiplier: 2.0 }; // post-AM peak
-  if (fractionalHour >= 15.0 && fractionalHour < 16.5)
-    return { trafficMultiplier: 1.2, freeMultiplier: 1.8 }; // pre-PM peak
-  if (fractionalHour >= 5.0 && fractionalHour < 6.5)
-    return { trafficMultiplier: 1.2, freeMultiplier: 1.5 }; // early AM
-  return { trafficMultiplier: 1.05, freeMultiplier: 1.2 };  // midday / evening
-}
 
 function formatTime(timestamp: number): string {
   // Always display in Hawaii Standard Time (UTC-10)
@@ -115,14 +97,10 @@ export async function POST(request: NextRequest) {
             const durationSeconds = element.duration.value;
             const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
 
-            // Apply Honolulu Reality Correction:
-            // max(traffic × trafficMultiplier, free × freeMultiplier)
-            // This avoids over-correction on days when Google already reflects congestion.
-            const correction = getHawaiiRealityCorrection(departureTime);
-            const durationInTrafficSeconds = Math.round(Math.max(
-              rawDurationInTrafficSeconds * correction.trafficMultiplier,
-              durationSeconds * correction.freeMultiplier
-            ));
+            // Use Google duration_in_traffic directly.
+            // Any fixed multiplier either over-corrects light-traffic slots or
+            // under-corrects heavy ones — see comment block above for full analysis.
+            const durationInTrafficSeconds = rawDurationInTrafficSeconds;
 
             const arrivalTime = departureTime + durationInTrafficSeconds;
             return {
