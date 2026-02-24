@@ -107,6 +107,11 @@ export async function POST(request: NextRequest) {
             const durationSeconds = element.duration.value;
             const rawDurationInTrafficSeconds = element.duration_in_traffic.value;
 
+            // DEBUG: log raw Google API values
+            const hawaiiHourDbg = ((Math.floor(departureTime / 3600) - 10) % 24 + 24) % 24;
+            const hawaiiMinDbg  = Math.floor((departureTime % 3600) / 60);
+            console.log(`[ETA DEBUG] Hawaii ${hawaiiHourDbg}:${String(hawaiiMinDbg).padStart(2,"0")} | free=${Math.round(durationSeconds/60)}min | traffic=${Math.round(rawDurationInTrafficSeconds/60)}min`);
+
             // Apply Honolulu Reality Correction factor directly to duration_in_traffic.
             // Google Maps consistently underestimates Oahu peak-hour congestion across
             // all routes (H1, Pali, Likelike, H3, etc.).
