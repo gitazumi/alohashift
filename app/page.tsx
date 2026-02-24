@@ -126,17 +126,6 @@ export default function HomePage() {
         desiredArrivalTimestamp += 7 * 24 * 60 * 60;
       }
 
-      // DEBUG — remove after fix confirmed
-      console.log('[DEBUG] desiredArrivalTimestamp:', desiredArrivalTimestamp,
-        '→', new Date((desiredArrivalTimestamp - 10*3600)*1000).toISOString());
-      console.log('[DEBUG] startUtcMs < nowUtcMs?', startUtcMs < nowUtcMs,
-        '| startUtcMs:', Math.floor(startUtcMs/1000), '| nowUtcMs:', Math.floor(nowUtcMs/1000));
-      if (data.results[0]) {
-        console.log('[DEBUG] result[0] arrivalTime:', data.results[0].arrivalTime,
-          '→', new Date((data.results[0].arrivalTime - 10*3600)*1000).toISOString());
-        console.log('[DEBUG] late?', data.results[0].arrivalTime > desiredArrivalTimestamp);
-      }
-
       const stressData = calculateStressData(
         data.results,
         data.freeFlowDuration,
