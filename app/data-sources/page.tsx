@@ -64,21 +64,6 @@ export default function DataSourcesPage() {
             <p className="text-slate-700">H1, H2, H3, Pali Highway, Likelike Highway, Kalanianaole Highway, Kamehameha Highway, Nimitz Highway, Farrington Highway, and more</p>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 space-y-1.5">
-            <p className="font-semibold text-slate-700 mb-1">📅 School Calendar Awareness</p>
-            <p>
-              Each commute report is automatically tagged with whether school was in session
-              that day, based on the <strong>Hawaii DOE academic calendar</strong>.
-              This is critical because Oahu traffic during school breaks is dramatically
-              lighter than on school days — the same Monday at 7 AM can differ by 20–30 minutes
-              depending on whether school is in session.
-            </p>
-            <p className="text-slate-500">
-              School days and non-school days are stored separately, so predictions
-              always compare like with like.
-            </p>
-          </div>
-
           <Link
             href="/community"
             className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition"
@@ -87,7 +72,58 @@ export default function DataSourcesPage() {
           </Link>
         </section>
 
-        {/* Section 2: Google Maps */}
+        {/* Section 2: School Calendar Awareness */}
+        <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+          <div className="flex items-start gap-4">
+            <span className="text-2xl">📅</span>
+            <div>
+              <h2 className="text-lg font-semibold text-slate-800">Hawaii DOE School Calendar</h2>
+              <span className="inline-block mt-1 text-xs font-medium bg-amber-100 text-amber-700 rounded-full px-2 py-0.5">Seasonal Context — School Day Detection</span>
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            Oahu traffic during school breaks is dramatically lighter than on school days.
+            The same Monday at 7 AM can differ by <strong>20–30 minutes</strong> depending on whether
+            school is in session. Day-of-week alone is not enough — seasonal context matters.
+          </p>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 space-y-2">
+            <p className="font-semibold">How it works</p>
+            <p>
+              Every community commute report is automatically tagged with whether school was
+              in session that day, based on the <strong>Hawaii DOE academic calendar</strong>.
+              School days and non-school days are stored separately, so future predictions
+              always compare like with like — a summer Friday vs. a school-year Friday are
+              treated as distinct patterns.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Source</p>
+              <p className="text-slate-700">Hawaii DOE Academic Calendar (SY 2024–25 and 2025–26)</p>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Breaks Covered</p>
+              <p className="text-slate-700">Summer, Winter, Spring, Thanksgiving, Federal &amp; State holidays</p>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Applied To</p>
+              <p className="text-slate-700">Each commute report at submission time</p>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">UI Indicator</p>
+              <p className="text-slate-700">🏫 School day / 📴 School not in session banner shown in search results</p>
+            </div>
+          </div>
+
+          <a href="https://www.hawaiipublicschools.org/TeachingAndLearning/StudentLearning/SchoolYear/Pages/School-Year-Calendar.aspx" target="_blank" rel="noopener noreferrer"
+            className="text-xs text-blue-500 hover:underline">
+            → Hawaii DOE School Year Calendar
+          </a>
+        </section>
+
+        {/* Section 3: Google Maps Distance Matrix */}
         <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
           <div className="flex items-start gap-4">
             <span className="text-2xl">🗺️</span>
@@ -132,7 +168,7 @@ export default function DataSourcesPage() {
           </a>
         </section>
 
-        {/* Section 3: HDOT AADT */}
+        {/* Section 4: HDOT AADT */}
         <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
           <div className="flex items-start gap-4">
             <span className="text-2xl">🏛️</span>
@@ -173,7 +209,7 @@ export default function DataSourcesPage() {
           </a>
         </section>
 
-        {/* Section 4: TomTom */}
+        {/* Section 5: TomTom */}
         <section className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
           <div className="flex items-start gap-4">
             <span className="text-2xl">📡</span>

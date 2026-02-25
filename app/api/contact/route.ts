@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
     const { error } = await resend.emails.send({
       from: "AlohaShift Contact <onboarding@resend.dev>",
       to: "arensawa@gmail.com",
-      replyTo: email,
       subject: `[AlohaShift] ${subject}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px;">
@@ -26,7 +25,7 @@ export async function POST(request: NextRequest) {
             </tr>
             <tr>
               <td style="padding: 6px 0; color: #64748b; font-size: 13px;">Email</td>
-              <td style="padding: 6px 0; color: #1e293b; font-size: 13px;">${email}</td>
+              <td style="padding: 6px 0; font-size: 13px;"><a href="mailto:${email}" style="color:#3b82f6;">${email}</a></td>
             </tr>
             <tr>
               <td style="padding: 6px 0; color: #64748b; font-size: 13px;">Subject</td>
