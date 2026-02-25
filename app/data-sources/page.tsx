@@ -64,6 +64,21 @@ export default function DataSourcesPage() {
             <p className="text-slate-700">H1, H2, H3, Pali Highway, Likelike Highway, Kalanianaole Highway, Kamehameha Highway, Nimitz Highway, Farrington Highway, and more</p>
           </div>
 
+          <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 space-y-1.5">
+            <p className="font-semibold text-slate-700 mb-1">📅 School Calendar Awareness</p>
+            <p>
+              Each commute report is automatically tagged with whether school was in session
+              that day, based on the <strong>Hawaii DOE academic calendar</strong>.
+              This is critical because Oahu traffic during school breaks is dramatically
+              lighter than on school days — the same Monday at 7 AM can differ by 20–30 minutes
+              depending on whether school is in session.
+            </p>
+            <p className="text-slate-500">
+              School days and non-school days are stored separately, so predictions
+              always compare like with like.
+            </p>
+          </div>
+
           <Link
             href="/community"
             className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition"

@@ -11,6 +11,7 @@ import CollectiveImpact from "@/components/CollectiveImpact";
 import RouteMap from "@/components/RouteMap";
 import { calculateStressData, generateDepartureTimes } from "@/lib/stressIndex";
 import { generateAIComment } from "@/lib/aiComments";
+import { isTodaySchoolDay } from "@/lib/schoolCalendar";
 import type { ETAResponse, FormValues, StressData } from "@/types";
 interface ResultState {
   stressData: StressData[];
@@ -155,6 +156,26 @@ export default function HomePage() {
         {/* Results */}
         {result && (
           <div className="space-y-8">
+            {/* School day indicator */}
+            {(() => {
+              const schoolInfo = isTodaySchoolDay();
+              return schoolInfo.isSchoolDay ? (
+                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm text-blue-700">
+                  <span>🏫</span>
+                  <span>
+                    <span className="font-semibold">School day</span> — predictions include school traffic patterns.
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-700">
+                  <span>📴</span>
+                  <span>
+                    <span className="font-semibold">School is not in session</span> ({schoolInfo.reason}) — traffic may be lighter than usual.
+                  </span>
+                </div>
+              );
+            })()}
+
             {/* Route summary */}
             <div className="flex items-center gap-3 text-sm text-slate-500">
               <span className="font-medium text-slate-700">{result.origin}</span>

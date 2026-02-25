@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
+import { getSchoolDayInfo } from "@/lib/schoolCalendar";
 
 // ── Route segment extraction ─────────────────────────────────────────────────
 //
@@ -105,7 +106,10 @@ export async function POST(request: NextRequest) {
       ? Math.round(((actual - predicted) / predicted) * 100)
       : null;
 
-    // ── 1. Fetch route segments in background (non-blocking for user) ─────
+    // ── 1. Determine school day status ────────────────────────────────────
+    const schoolDayInfo = getSchoolDayInfo(new Date());
+
+    // ── 2. Fetch route segments in background (non-blocking for user) ─────
     const apiKey = process.env.GOOGLE_MAPS_API_KEY ?? "";
     let routeSegments: string[] = [];
     try {
@@ -116,7 +120,7 @@ export async function POST(request: NextRequest) {
       console.warn("Route segment fetch failed (non-blocking):", segErr);
     }
 
-    // ── 2. Save to Supabase ───────────────────────────────────────────────
+    // ── 3. Save to Supabase ───────────────────────────────────────────────
     const supabase = createClient(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_ANON_KEY!
@@ -135,6 +139,8 @@ export async function POST(request: NextRequest) {
         diff_pct: diffPct,
         notes: notes || null,
         route_segments: routeSegments,
+        is_school_day: schoolDayInfo.isSchoolDay,
+        school_day_reason: schoolDayInfo.reason,
       });
 
     if (dbError) {
@@ -157,7 +163,7 @@ export async function POST(request: NextRequest) {
           <table style="width:100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
             <tr style="background:#f8fafc;">
               <td style="padding:8px 12px; color:#64748b; width:140px; font-weight:600;">Day</td>
-              <td style="padding:8px 12px; color:#1e293b;">${dayOfWeek}</td>
+              <td style="padding:8px 12px; color:#1e293b;">${dayOfWeek} · ${schoolDayInfo.isSchoolDay ? "🏫 School day" : `📴 No school (${schoolDayInfo.reason})`}</td>
             </tr>
             <tr>
               <td style="padding:8px 12px; color:#64748b; font-weight:600;">Departure Time</td>
