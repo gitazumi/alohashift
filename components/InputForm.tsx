@@ -29,16 +29,39 @@ function getHawaiiDayOfWeek(): number {
   return hawaiiDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
 }
 
+const STORAGE_KEY = "alohashift_route";
+
+function loadSavedRoute(): { origin: string; destination: string } {
+  if (typeof window === "undefined") return { origin: "", destination: "" };
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { origin: "", destination: "" };
+    return JSON.parse(raw);
+  } catch {
+    return { origin: "", destination: "" };
+  }
+}
+
 export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
+  const saved = loadSavedRoute();
   const [values, setValues] = useState<FormValues>({
-    origin: "",
-    destination: "",
+    origin: saved.origin,
+    destination: saved.destination,
     startTime: "06:30",
     endTime: "07:30",
     intervalMinutes: 10,
-    desiredArrivalTime: "07:45",
+    desiredArrivalTime: "08:00",
     targetDay: getHawaiiDayOfWeek() as TargetDay, // Auto-detect Hawaii day
   });
+
+  // Persist origin/destination to localStorage whenever they change
+  const setRoute = (origin: string, destination: string) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ origin, destination }));
+    } catch {
+      // ignore
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +107,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             label="Origin"
             placeholder="e.g. Ala Moana Center, Honolulu"
             value={values.origin}
-            onChange={(val) => setValues({ ...values, origin: val })}
+            onChange={(val) => {
+              setValues({ ...values, origin: val });
+              setRoute(val, values.destination);
+            }}
             icon="origin"
           />
 
@@ -93,7 +119,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             label="Destination"
             placeholder="e.g. Honolulu International Airport"
             value={values.destination}
-            onChange={(val) => setValues({ ...values, destination: val })}
+            onChange={(val) => {
+              setValues({ ...values, destination: val });
+              setRoute(values.origin, val);
+            }}
             icon="destination"
           />
 

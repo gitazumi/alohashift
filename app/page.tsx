@@ -177,28 +177,19 @@ export default function HomePage() {
             })()}
 
             {/* Route summary */}
-            <div className="flex items-center gap-3 text-sm text-slate-500">
-              <span className="font-medium text-slate-700">{result.origin}</span>
-              <svg
-                className="w-4 h-4 text-slate-300"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="font-medium text-slate-700">
-                {result.destination}
-              </span>
-              <span className="ml-auto text-slate-400">
-                Goal:{" "}
-                <span className="font-semibold text-slate-600">
-                  {result.desiredArrival}
-                </span>
-              </span>
+            <div className="bg-white rounded-xl border border-slate-200 px-4 py-3 space-y-1.5">
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-slate-400 shrink-0 mt-0.5">🟢</span>
+                <span className="font-medium text-slate-700 break-words min-w-0">{result.origin}</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-slate-400 shrink-0 mt-0.5">🔴</span>
+                <span className="font-medium text-slate-700 break-words min-w-0">{result.destination}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-400 pt-0.5 border-t border-slate-100">
+                <span>Must arrive by</span>
+                <span className="font-semibold text-slate-600">{result.desiredArrival}</span>
+              </div>
             </div>
 
             {/* Result Cards Grid */}
