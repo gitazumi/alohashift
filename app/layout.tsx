@@ -15,10 +15,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = "https://alohashift.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: "AlohaShift — Hawaii Commute Intelligence",
   description:
-    "AlohaShift helps Hawaii commuters find the best departure time by visualizing real-time traffic predictions. Compare arrival times side by side and beat the rush.",
+    "Find the best time to leave for your Oahu commute. Compare departure slots side by side, see when traffic hits hardest, and arrive on time — built for Hawaii drivers.",
   keywords: [
     "Hawaii commute",
     "Honolulu traffic",
@@ -34,17 +37,26 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AlohaShift — Hawaii Commute Intelligence",
     description:
-      "Find the best time to leave. Compare departure slots and see exactly when traffic hits hardest — built for Hawaii commuters.",
+      "Find the best time to leave for your Oahu commute. Compare departure slots side by side and see exactly when traffic hits hardest.",
     type: "website",
     locale: "en_US",
-    url: "https://alohashift.com",
+    url: BASE_URL,
     siteName: "AlohaShift",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "AlohaShift — Hawaii Commute Intelligence",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "AlohaShift — Hawaii Commute Intelligence",
     description:
-      "Find the best time to leave. Compare departure slots and see exactly when traffic hits hardest — built for Hawaii commuters.",
+      "Find the best time to leave for your Oahu commute. Compare departure slots and see exactly when traffic hits hardest.",
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
