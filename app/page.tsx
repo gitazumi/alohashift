@@ -160,15 +160,15 @@ export default function HomePage() {
             {(() => {
               const schoolInfo = isTodaySchoolDay();
               return schoolInfo.isSchoolDay ? (
-                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm text-blue-700">
-                  <span>🏫</span>
+                <div className="flex items-center gap-2.5 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm text-blue-700">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
                   <span>
                     <span className="font-semibold">School day</span> — predictions include school traffic patterns.
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-700">
-                  <span>📴</span>
+                <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-700">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
                   <span>
                     <span className="font-semibold">School is not in session</span> ({schoolInfo.reason}) — traffic may be lighter than usual.
                   </span>
@@ -178,12 +178,12 @@ export default function HomePage() {
 
             {/* Route summary */}
             <div className="bg-white rounded-xl border border-stone-200 px-4 py-3 space-y-1.5">
-              <div className="flex items-start gap-2 text-sm">
-                <span className="text-stone-400 shrink-0 mt-0.5">🟢</span>
+              <div className="flex items-start gap-2.5 text-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5"></span>
                 <span className="font-medium text-stone-700 break-words min-w-0">{result.origin}</span>
               </div>
-              <div className="flex items-start gap-2 text-sm">
-                <span className="text-stone-400 shrink-0 mt-0.5">🔴</span>
+              <div className="flex items-start gap-2.5 text-sm">
+                <span className="w-2 h-2 rounded-full bg-red-400 shrink-0 mt-1.5"></span>
                 <span className="font-medium text-stone-700 break-words min-w-0">{result.destination}</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-stone-400 pt-0.5 border-t border-stone-100">
@@ -259,7 +259,7 @@ export default function HomePage() {
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
           <div className="flex-1 text-center sm:text-left">
             <p className="text-sm font-semibold text-emerald-800 mb-0.5">
-              🤙 Help make AlohaShift more accurate
+              Help make AlohaShift more accurate
             </p>
             <p className="text-xs text-emerald-700 leading-relaxed">
               Share your real commute times and see how predictions compare to reality.

@@ -2,7 +2,7 @@
 
 export default function HeroSection() {
   return (
-    <section className="bg-gradient-to-b from-stone-900 via-stone-900 to-stone-800 px-6 py-20 md:py-28">
+    <section className="bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 px-6 py-20 md:py-28">
       <div className="max-w-3xl mx-auto text-center">
 
         {/* Title */}
