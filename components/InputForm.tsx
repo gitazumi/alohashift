@@ -92,14 +92,8 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
   })();
 
   return (
-    <section className="px-6 py-10 bg-transparent">
+    <section className="px-8 py-10 bg-transparent">
       <div className="max-w-2xl mx-auto">
-        <h2 className="text-xl font-semibold text-stone-800 mb-1.5">
-          Plan your commute
-        </h2>
-        <p className="text-sm text-stone-400 mb-8">
-          Set your route, departure window, and arrival goal to compare your options.
-        </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Origin */}

@@ -137,12 +137,12 @@ export default function HomePage() {
       : null;
 
   return (
-    <main className="min-h-screen bg-[#faf9f7]">
+    <main className="min-h-screen bg-white">
       <HeroSection />
 
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
-        {/* Input Form */}
-        <div className="bg-white rounded-2xl border border-stone-100 shadow-md overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 pb-12 space-y-10">
+        {/* Input Form — floats up from hero */}
+        <div className="relative z-10 -mt-10 bg-white rounded-3xl border border-zinc-100 shadow-2xl overflow-hidden">
           <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
 
