@@ -40,7 +40,7 @@ export default function HeroSection() {
           <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400 bg-clip-text text-transparent">
             Shift
           </span>
-          <span className="text-zinc-600 text-3xl md:text-4xl font-light">.com</span>
+          <span className="text-white/60 text-3xl md:text-4xl font-light">.com</span>
         </h1>
 
         {/* Tagline */}

@@ -262,7 +262,7 @@ export default function HomePage() {
         )}
 
         {/* Community Data CTA — always visible, just above the page footer */}
-        <div className="rounded-3xl bg-white border border-stone-200 px-8 py-10 text-center">
+        <div className="rounded-3xl bg-blue-50 border border-blue-100 px-8 py-10 text-center">
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 text-xs mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
