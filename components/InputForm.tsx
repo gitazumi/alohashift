@@ -92,7 +92,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
   })();
 
   return (
-    <section className="px-6 py-10 bg-white">
+    <section className="px-6 py-10 bg-transparent">
       <div className="max-w-2xl mx-auto">
         <h2 className="text-xl font-semibold text-stone-800 mb-1.5">
           Plan your commute
@@ -148,10 +148,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     values.targetDay === day.value
                       ? day.isWeekend
                         ? "bg-stone-700 text-white border-stone-700"
-                        : "bg-blue-500 text-white border-blue-500"
+                        : "bg-amber-500 text-white border-amber-500"
                       : day.isWeekend
                       ? "bg-white text-stone-400 border-stone-200 hover:border-stone-400"
-                      : "bg-white text-stone-600 border-stone-200 hover:border-blue-300"
+                      : "bg-white text-stone-600 border-stone-200 hover:border-amber-300"
                   }`}
                 >
                   {day.label}
@@ -181,7 +181,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                   onChange={(e) =>
                     setValues({ ...values, startTime: e.target.value })
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-transparent transition bg-white"
                   required
                 />
               </div>
@@ -194,7 +194,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                   onChange={(e) =>
                     setValues({ ...values, endTime: e.target.value })
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-transparent transition bg-white"
                   required
                 />
               </div>
@@ -219,8 +219,8 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                   }
                   className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition ${
                     values.intervalMinutes === min
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white text-stone-500 border-stone-200 hover:border-blue-300"
+                      ? "bg-amber-500 text-white border-amber-500"
+                      : "bg-white text-stone-500 border-stone-200 hover:border-amber-300"
                   }`}
                 >
                   {min} min
@@ -240,7 +240,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
               onChange={(e) =>
                 setValues({ ...values, desiredArrivalTime: e.target.value })
               }
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition bg-white"
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-transparent transition bg-white"
               required
             />
             <p className="text-xs text-stone-400 mt-1.5">
@@ -255,7 +255,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
               !values.origin.trim() ||
               !values.destination.trim()
             }
-            className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition text-sm shadow-sm shadow-blue-200"
+            className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition text-sm shadow-sm shadow-amber-200"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

@@ -7,7 +7,7 @@ export default function HeroSection() {
 
         {/* Title */}
         <h1 className="text-5xl md:text-6xl font-bold text-stone-900 leading-tight mb-5">
-          Aloha<span className="text-blue-500">Shift</span>
+          Aloha<span className="text-blue-500">Shift</span><span className="text-stone-300 text-4xl md:text-5xl font-light">.com</span>
         </h1>
 
         {/* Primary tagline */}

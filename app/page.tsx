@@ -137,12 +137,12 @@ export default function HomePage() {
       : null;
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-[#faf9f7]">
       <HeroSection />
 
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
         {/* Input Form */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-amber-50/40 rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
           <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
 
@@ -177,25 +177,25 @@ export default function HomePage() {
             })()}
 
             {/* Route summary */}
-            <div className="bg-white rounded-xl border border-slate-200 px-4 py-3 space-y-1.5">
+            <div className="bg-white rounded-xl border border-stone-200 px-4 py-3 space-y-1.5">
               <div className="flex items-start gap-2 text-sm">
-                <span className="text-slate-400 shrink-0 mt-0.5">🟢</span>
-                <span className="font-medium text-slate-700 break-words min-w-0">{result.origin}</span>
+                <span className="text-stone-400 shrink-0 mt-0.5">🟢</span>
+                <span className="font-medium text-stone-700 break-words min-w-0">{result.origin}</span>
               </div>
               <div className="flex items-start gap-2 text-sm">
-                <span className="text-slate-400 shrink-0 mt-0.5">🔴</span>
-                <span className="font-medium text-slate-700 break-words min-w-0">{result.destination}</span>
+                <span className="text-stone-400 shrink-0 mt-0.5">🔴</span>
+                <span className="font-medium text-stone-700 break-words min-w-0">{result.destination}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 pt-0.5 border-t border-slate-100">
+              <div className="flex items-center gap-1.5 text-xs text-stone-400 pt-0.5 border-t border-stone-100">
                 <span>Must arrive by</span>
-                <span className="font-semibold text-slate-600">{result.desiredArrival}</span>
+                <span className="font-semibold text-stone-600">{result.desiredArrival}</span>
               </div>
             </div>
 
             {/* Result Cards Grid */}
             <section>
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-4">
-                Departure Windows
+              <h2 className="text-sm font-medium text-stone-400 mb-4">
+                Departure windows
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {result.stressData.map((data) => (
@@ -245,8 +245,8 @@ export default function HomePage() {
             })()}
 
             {/* Philosophy footer */}
-            <div className="text-center py-8 border-t border-slate-200">
-              <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+            <div className="text-center py-8 border-t border-stone-200">
+              <p className="text-xs text-stone-400 max-w-md mx-auto leading-relaxed">
                 AlohaShift presents options — not prescriptions. We do not
                 notify, push, or optimize on your behalf. The decision is always
                 yours.
