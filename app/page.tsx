@@ -262,7 +262,7 @@ export default function HomePage() {
         )}
 
         {/* Community Data CTA — always visible, just above the page footer */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 via-slate-800 to-blue-900 px-8 py-10 text-center">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-800 via-slate-700 to-blue-800 px-8 py-10 text-center">
           {/* Subtle glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
           {/* Top edge line */}
