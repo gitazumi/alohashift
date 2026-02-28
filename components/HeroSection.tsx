@@ -1,25 +1,29 @@
 "use client";
 
+import Image from "next/image";
+
 export default function HeroSection() {
   const features = ["Real traffic data", "School calendar aware", "Built for Oahu"];
 
   return (
     <section className="relative overflow-hidden bg-zinc-950 px-6 py-24 md:py-32">
 
-      {/* Dot grid */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
+      {/* Background photo — Honolulu aerial view (Unsplash / Jakob Kim, free license) */}
+      <Image
+        src="https://images.unsplash.com/photo-ATtVibqks4o?auto=format&fit=crop&w=1920&q=80"
+        alt="Honolulu Hawaii aerial view"
+        fill
+        className="object-cover object-center"
+        priority
       />
+
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-zinc-950/65" />
 
       {/* Top edge glow */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/60 to-transparent pointer-events-none" />
 
-      {/* Center ambient glow */}
+      {/* Subtle blue ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative max-w-3xl mx-auto text-center">
@@ -36,7 +40,7 @@ export default function HeroSection() {
           <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-400 bg-clip-text text-transparent">
             Shift
           </span>
-          <span className="text-zinc-700 text-3xl md:text-4xl font-light">.com</span>
+          <span className="text-zinc-600 text-3xl md:text-4xl font-light">.com</span>
         </h1>
 
         {/* Tagline */}
@@ -45,7 +49,7 @@ export default function HeroSection() {
         </p>
 
         {/* Description */}
-        <p className="text-sm text-zinc-500 mb-10 max-w-md mx-auto leading-relaxed">
+        <p className="text-sm text-zinc-400 mb-10 max-w-md mx-auto leading-relaxed">
           Compare departure times and find the window when Oahu traffic is actually manageable —
           built by a local, for local commuters.
         </p>
@@ -55,7 +59,7 @@ export default function HeroSection() {
           {features.map((f) => (
             <span
               key={f}
-              className="px-3 py-1.5 text-xs text-zinc-500 border border-white/10 rounded-full bg-white/5"
+              className="px-3 py-1.5 text-xs text-zinc-400 border border-white/10 rounded-full bg-white/5 backdrop-blur-sm"
             >
               {f}
             </span>
