@@ -262,37 +262,30 @@ export default function HomePage() {
         )}
 
         {/* Community Data CTA — always visible, just above the page footer */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-800 via-slate-700 to-blue-800 px-8 py-10 text-center">
-          {/* Subtle glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-          {/* Top edge line */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent" />
-
-          <div className="relative">
-            {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-emerald-400 text-xs mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-              Community-powered predictions
-            </div>
-
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 tracking-tight">
-              Your commute data makes us smarter.
-            </h2>
-            <p className="text-sm text-blue-200/60 max-w-md mx-auto leading-relaxed mb-8">
-              Real commute times from real Oahu drivers power our predictions.
-              Takes less than 2 minutes — no account needed.
-            </p>
-
-            <Link
-              href="/community"
-              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold px-7 py-3.5 rounded-xl transition text-sm shadow-lg shadow-emerald-500/30"
-            >
-              Submit Your Commute Data
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
-            </Link>
+        <div className="rounded-3xl bg-white border border-stone-200 px-8 py-10 text-center">
+          {/* Eyebrow */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 text-xs mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+            Community-powered predictions
           </div>
+
+          <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-3 tracking-tight">
+            Your commute data makes us smarter.
+          </h2>
+          <p className="text-sm text-stone-500 max-w-md mx-auto leading-relaxed mb-8">
+            Real commute times from real Oahu drivers power our predictions.
+            Takes less than 2 minutes — no account needed.
+          </p>
+
+          <Link
+            href="/community"
+            className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold px-7 py-3.5 rounded-xl transition text-sm shadow-lg shadow-emerald-500/30"
+          >
+            Submit Your Commute Data
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </Link>
         </div>
 
       </div>
