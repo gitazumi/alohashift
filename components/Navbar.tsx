@@ -7,13 +7,13 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 bg-[#faf9f7]/95 backdrop-blur border-b border-stone-200">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
 
         {/* Logo / Home link */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="font-bold text-stone-800 text-sm">
-            Aloha<span className="text-blue-500">Shift</span>
+          <span className="font-bold text-stone-900 text-sm">
+            Aloha<span className="text-amber-500">Shift</span>
           </span>
         </Link>
 
@@ -23,7 +23,7 @@ export default function Navbar() {
             href="/"
             className={`px-3 py-1.5 rounded-lg font-medium transition ${
               pathname === "/"
-                ? "bg-blue-50 text-blue-600"
+                ? "bg-amber-50 text-amber-700"
                 : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
             }`}
           >

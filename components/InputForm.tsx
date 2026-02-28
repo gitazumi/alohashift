@@ -255,7 +255,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
               !values.origin.trim() ||
               !values.destination.trim()
             }
-            className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition text-sm shadow-sm shadow-amber-200"
+            className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition text-sm shadow-lg shadow-amber-500/30"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

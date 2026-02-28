@@ -142,7 +142,7 @@ export default function HomePage() {
 
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-10">
         {/* Input Form */}
-        <div className="bg-amber-50/40 rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-stone-100 shadow-md overflow-hidden">
           <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
 
