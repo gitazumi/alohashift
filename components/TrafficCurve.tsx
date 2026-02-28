@@ -97,25 +97,23 @@ export default function TrafficCurve({ stressData, desiredArrival }: TrafficCurv
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6">
-      <div className="flex items-start justify-between mb-1">
+    <div className="bg-white rounded-2xl border border-stone-200 p-6">
+      <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-base font-semibold text-slate-800">Traffic Curve</h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Travel time by departure slot — data from Google Maps ETA snapshots
+          <h3 className="text-base font-semibold text-stone-800">Traffic curve</h3>
+          <p className="text-xs text-stone-400 mt-0.5">
+            How long each departure takes — red zones mean you&apos;d arrive late
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs text-slate-500 mt-1">
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
-            Risk Zone
-          </span>
+        <div className="flex items-center gap-1.5 text-xs text-stone-400 mt-1">
+          <span className="w-2.5 h-2.5 rounded-full bg-red-300 inline-block" />
+          late risk
         </div>
       </div>
 
       <ResponsiveContainer width="100%" height={260}>
         <LineChart data={chartData} margin={{ top: 20, right: 24, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f4" vertical={false} />
 
           {lateZones.map((z, i) => (
             <ReferenceArea
@@ -123,13 +121,12 @@ export default function TrafficCurve({ stressData, desiredArrival }: TrafficCurv
               x1={z.start}
               x2={z.end}
               fill="#fee2e2"
-              fillOpacity={0.6}
-              label={{ value: "Risk Zone", position: "insideTop", fontSize: 10, fill: "#ef4444" }}
+              fillOpacity={0.5}
             />
           ))}
 
-          <XAxis dataKey="departure" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-          <YAxis domain={[yMin, yMax]} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} width={36} />
+          <XAxis dataKey="departure" tick={{ fontSize: 11, fill: "#a8a29e" }} axisLine={false} tickLine={false} />
+          <YAxis domain={[yMin, yMax]} tick={{ fontSize: 11, fill: "#a8a29e" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} width={36} />
           <Tooltip content={<CustomTooltip />} />
           <Line
             type="monotone"
@@ -142,29 +139,16 @@ export default function TrafficCurve({ stressData, desiredArrival }: TrafficCurv
         </LineChart>
       </ResponsiveContainer>
 
-      {/* Stress Index explanation */}
-      <div className="mt-5 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4">
-        <p className="text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">
-          What is Stress Index?
-        </p>
-        <p className="text-xs text-slate-500 leading-relaxed mb-2">
-          Stress Index quantifies <strong>congestion ratio</strong>, <strong>lateness risk</strong>, and <strong>instability</strong> per departure slot into a single score.
-        </p>
-        <p className="text-xs text-slate-400 font-mono bg-white rounded-lg px-3 py-2 border border-slate-100 mb-2 overflow-x-auto whitespace-nowrap">
-          SI = (delay / free_flow) × 100 + lateness × 2 + |slope| × 8
-        </p>
-        <div className="flex flex-wrap gap-2 sm:gap-4 text-xs">
-          <span className="text-emerald-600 font-semibold">0–35 Stable</span>
-          <span className="text-amber-500 font-semibold">36–70 Moderate</span>
-          <span className="text-red-500 font-semibold">71+ Volatile</span>
-        </div>
-        <p className="text-xs text-slate-400 mt-2 italic">
-          Not advice. It&apos;s a lens. — This result is a snapshot; real conditions may vary.
-        </p>
-      </div>
-
-      <div className="mt-3 text-xs text-slate-400">
-        Goal arrival: <span className="font-semibold text-slate-600">{desiredArrival}</span>
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-stone-400 border-t border-stone-100 pt-3">
+        <span>
+          Goal: <span className="font-medium text-stone-600">{desiredArrival}</span>
+        </span>
+        <span className="flex items-center gap-2">
+          Traffic stress —
+          <span className="text-emerald-600 font-medium">stable</span>
+          <span className="text-amber-500 font-medium">moderate</span>
+          <span className="text-red-500 font-medium">volatile</span>
+        </span>
       </div>
     </div>
   );

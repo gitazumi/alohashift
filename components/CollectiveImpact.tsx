@@ -83,45 +83,36 @@ export default function CollectiveImpact({
   if (peakDelayMinutes <= 0 || freeFlowMinutes <= 0) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-8">
+    <div className="bg-white rounded-2xl border border-stone-200 p-6 space-y-8">
 
       {/* ── Header ── */}
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xl">📊</span>
-          <h3 className="text-base font-semibold text-slate-800">Impact Simulator</h3>
-        </div>
-        <p className="text-xs text-slate-400">
-          See what a small timing shift means — for your wallet, and for Honolulu.
+        <h3 className="text-base font-semibold text-stone-800 mb-1">What a small shift adds up to</h3>
+        <p className="text-sm text-stone-400">
+          See what leaving a few minutes earlier means over a year — for you and for Honolulu.
         </p>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SECTION A — PERSONAL IMPACT
-          Based entirely on the user's actual results
-      ══════════════════════════════════════════════════════════════ */}
+      {/* ── SECTION A: PERSONAL IMPACT ── */}
       <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🙋</span>
-          <div>
-            <p className="text-sm font-semibold text-emerald-800">Your Personal Impact</p>
-            <p className="text-xs text-emerald-600">
-              How much do you gain per year by choosing a less congested departure?
-            </p>
-          </div>
+        <div>
+          <p className="text-sm font-semibold text-emerald-800">Your personal savings</p>
+          <p className="text-xs text-emerald-600 mt-0.5">
+            How much do you gain per year by choosing a less congested departure?
+          </p>
         </div>
 
         {/* Shift slider */}
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
+            <label className="text-xs font-medium text-stone-500">
               How many minutes earlier do you leave?
             </label>
             <span className="text-sm font-bold text-emerald-700">{personalShift} min earlier</span>
           </div>
-          <p className="text-xs text-slate-400 mb-2">
-            Starting from <span className="font-medium text-slate-600">{worstLabel}</span> (most congested slot),
-            shifting <span className="font-medium text-emerald-700">{personalShift} min earlier</span> avoids up to{" "}
+          <p className="text-xs text-stone-400 mb-2">
+            Starting from <span className="font-medium text-stone-600">{worstLabel}</span> (most congested),
+            shifting {personalShift} min earlier avoids up to{" "}
             <span className="font-medium text-emerald-700">{personal.savedMin} min</span> of congestion per commute.
           </p>
           <input
@@ -130,7 +121,7 @@ export default function CollectiveImpact({
             onChange={(e) => setPersonalShift(Number(e.target.value))}
             className="w-full accent-emerald-500"
           />
-          <div className="flex justify-between text-xs text-slate-300 mt-1">
+          <div className="flex justify-between text-xs text-stone-300 mt-1">
             <span>5</span>
             <span className="hidden sm:block">10</span>
             <span className="hidden sm:block">15</span>
@@ -143,13 +134,13 @@ export default function CollectiveImpact({
         {/* Personal result cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-white border border-emerald-100 rounded-2xl px-4 py-4 text-center">
-            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">⏳ Time Saved</p>
+            <p className="text-xs font-medium text-emerald-600 mb-2">Time saved</p>
             <p className="text-3xl font-bold text-emerald-700 leading-none">
               <Num value={personal.annualHours} decimals={1} />
               <span className="text-base font-normal ml-1">hrs</span>
             </p>
             <p className="text-xs text-emerald-500 mt-1">per year</p>
-            <p className="text-xs text-slate-400 mt-1">{personal.savedMin} min × {COMMUTE_DAYS_PER_YEAR} days</p>
+            <p className="text-xs text-stone-400 mt-1">{personal.savedMin} min × {COMMUTE_DAYS_PER_YEAR} days</p>
             {personal.workdaysEquiv >= 0.5 && (
               <p className="text-xs text-emerald-600 mt-2 font-medium">
                 ≈ {personal.workdaysEquiv} full workday{personal.workdaysEquiv !== 1 ? "s" : ""} back
@@ -158,16 +149,16 @@ export default function CollectiveImpact({
           </div>
 
           <div className="bg-white border border-emerald-100 rounded-2xl px-4 py-4 text-center">
-            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">⛽ Fuel Saved</p>
+            <p className="text-xs font-medium text-emerald-600 mb-2">Fuel saved</p>
             <p className="text-3xl font-bold text-emerald-700 leading-none">
               $<Num value={personal.annualFuelDol} decimals={0} />
             </p>
             <p className="text-xs text-emerald-500 mt-1">per year</p>
-            <p className="text-xs text-slate-400 mt-1">at ${GAS_PRICE}/gal (Hawaii avg)</p>
+            <p className="text-xs text-stone-400 mt-1">at ${GAS_PRICE}/gal (Hawaii avg)</p>
           </div>
 
           <div className="bg-white border border-emerald-100 rounded-2xl px-4 py-4 text-center">
-            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">🌍 CO₂ Avoided</p>
+            <p className="text-xs font-medium text-emerald-600 mb-2">CO₂ avoided</p>
             <p className="text-3xl font-bold text-emerald-700 leading-none">
               <Num value={personal.annualCO2Kg} decimals={1} />
               <span className="text-base font-normal ml-1">kg</span>
@@ -178,32 +169,26 @@ export default function CollectiveImpact({
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SECTION B — CITY-SCALE IMPACT
-      ══════════════════════════════════════════════════════════════ */}
+      {/* ── SECTION B: CITY-SCALE IMPACT ── */}
       <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🌐</span>
-          <div>
-            <p className="text-sm font-semibold text-blue-800">City-Scale Impact</p>
-            <p className="text-xs text-blue-500">
-              What if many of the ~{TOTAL_COMMUTERS.toLocaleString()} H1 morning commuters made the same timing shift?
-            </p>
-          </div>
+        <div>
+          <p className="text-sm font-semibold text-blue-800">If Honolulu shifted together</p>
+          <p className="text-xs text-blue-500 mt-0.5">
+            What if many of the ~{TOTAL_COMMUTERS.toLocaleString()} H1 morning commuters made the same timing shift?
+          </p>
         </div>
 
         {/* Participation slider */}
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
-              What % of Honolulu commuters shift earlier?
+            <label className="text-xs font-medium text-stone-500">
+              What % of commuters shift earlier?
             </label>
             <span className="text-sm font-bold text-blue-600">{participationPct}%</span>
           </div>
-          <p className="text-xs text-slate-400 mb-2">
-            = <span className="font-medium text-slate-600">{city.shifters.toLocaleString()} people</span>{" "}
-            out of <span className="font-medium text-slate-600">{TOTAL_COMMUTERS.toLocaleString()}</span> H1 morning commuters
-            (HDOT AADT data) choosing a less congested departure time
+          <p className="text-xs text-stone-400 mb-2">
+            = <span className="font-medium text-stone-600">{city.shifters.toLocaleString()} people</span>{" "}
+            out of {TOTAL_COMMUTERS.toLocaleString()} H1 morning commuters choosing a better window
           </p>
           <input
             type="range" min={1} max={30} step={1}
@@ -211,7 +196,7 @@ export default function CollectiveImpact({
             onChange={(e) => setParticipationPct(Number(e.target.value))}
             className="w-full accent-blue-500"
           />
-          <div className="flex justify-between text-xs text-slate-300 mt-1">
+          <div className="flex justify-between text-xs text-stone-300 mt-1">
             <span>1%</span><span>30%</span>
           </div>
         </div>
@@ -219,7 +204,7 @@ export default function CollectiveImpact({
         {/* City result cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="bg-white border border-blue-100 rounded-2xl px-4 py-4 text-center">
-            <p className="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-2">Peak Congestion</p>
+            <p className="text-xs font-medium text-blue-500 mb-2">Peak congestion</p>
             <p className="text-3xl font-bold text-blue-700">
               −{city.congRedPct}
               <span className="text-xl font-normal ml-0.5">%</span>
@@ -228,7 +213,7 @@ export default function CollectiveImpact({
           </div>
 
           <div className="bg-white border border-blue-100 rounded-2xl px-4 py-4 text-center">
-            <p className="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-2">Time Saved / Year</p>
+            <p className="text-xs font-medium text-blue-500 mb-2">Time saved / year</p>
             <p className="text-3xl font-bold text-blue-700">
               {city.cityAnnualHours.toLocaleString()}
               <span className="text-base font-normal ml-1">hrs</span>
@@ -237,7 +222,7 @@ export default function CollectiveImpact({
           </div>
 
           <div className="bg-white border border-blue-100 rounded-2xl px-4 py-4 text-center">
-            <p className="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-2">CO₂ Reduced / Year</p>
+            <p className="text-xs font-medium text-blue-500 mb-2">CO₂ reduced / year</p>
             <p className="text-3xl font-bold text-blue-700">
               <Num value={city.cityAnnualCO2Ton} decimals={1} />
               <span className="text-base font-normal ml-1">tons</span>
@@ -248,18 +233,16 @@ export default function CollectiveImpact({
       </div>
 
       {/* ── Transparency footer ── */}
-      <div className="border-t border-slate-100 pt-4 text-xs text-slate-400 leading-relaxed space-y-1">
+      <div className="border-t border-stone-100 pt-4 text-xs text-stone-400 leading-relaxed space-y-1">
         <p>
-          <span className="font-semibold text-slate-500">Commuter estimate: </span>
-          H1 freeway AADT = 65,800 vehicles/day (HDOT HPMS Dataset, highways.hidot.hawaii.gov) ·
-          Morning rush 6–9 AM ≈ 15% of daily volume × 1.1 avg occupancy ={" "}
-          <span className="font-medium text-slate-500">{TOTAL_COMMUTERS.toLocaleString()} commuters</span>.
+          <span className="font-medium text-stone-500">Commuter estimate: </span>
+          H1 freeway AADT = 65,800 vehicles/day (HDOT HPMS Dataset) ·
+          Morning rush 6–9 AM ≈ 15% × 1.1 avg occupancy ={" "}
+          <span className="font-medium text-stone-500">{TOTAL_COMMUTERS.toLocaleString()} commuters</span>.
         </p>
         <p>
-          <span className="font-semibold text-slate-500">Other assumptions: </span>
-          {COMMUTE_DAYS_PER_YEAR} commute days/yr · ${GAS_PRICE}/gal (Hawaii avg) ·{" "}
-          {AVG_FUEL_GAL_PER_CONG_MIN} gal extra/congestion-min · {CO2_PER_CONGESTION_MIN} kg CO₂/congestion-min.
-          City model: reduction = 0.6 × participation × (shift/10). Simulation only.
+          <span className="font-medium text-stone-500">Assumptions: </span>
+          {COMMUTE_DAYS_PER_YEAR} commute days/yr · ${GAS_PRICE}/gal · simulation only, not financial advice.
         </p>
       </div>
     </div>

@@ -45,60 +45,58 @@ export default function ResultCard({ data, desiredArrival }: ResultCardProps) {
   return (
     <div className={`rounded-2xl border p-5 transition-all ${risk.bg} ${risk.border}`}>
 
-      {/* Header row */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">
-          Departure
-        </p>
-        <span className={`text-xs font-bold px-3 py-1 rounded-full ${risk.badge}`}>
+      {/* Header row: badge only, no "DEPARTURE" label */}
+      <div className="flex items-center justify-end mb-3">
+        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${risk.badge}`}>
           {risk.label}
         </span>
       </div>
 
       {/* Departure time */}
-      <p className="text-3xl font-bold text-slate-900 mb-4">
+      <p className="text-3xl font-bold text-stone-900 mb-1 leading-none">
         {data.departureLabel}
       </p>
+      <p className="text-xs text-stone-400 mb-4">departure</p>
 
       {/* Travel → Arrival */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-3">
         <div className="text-center">
-          <p className="text-xs text-slate-400 mb-0.5">Travel time</p>
-          <p className="text-xl font-bold text-slate-700">
+          <p className="text-xs text-stone-400 mb-0.5">travel time</p>
+          <p className="text-xl font-bold text-stone-700">
             {data.durationInTrafficMinutes}
-            <span className="text-sm font-normal text-slate-400 ml-0.5">min</span>
+            <span className="text-sm font-normal text-stone-400 ml-0.5">min</span>
           </p>
         </div>
         <div className="flex-1 flex items-center gap-1">
-          <div className="flex-1 h-px bg-slate-200" />
-          <svg className="w-3 h-3 text-slate-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <div className="flex-1 h-px bg-stone-200" />
+          <svg className="w-3 h-3 text-stone-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
-          <div className="flex-1 h-px bg-slate-200" />
+          <div className="flex-1 h-px bg-stone-200" />
         </div>
         <div className="text-center">
-          <p className="text-xs text-slate-400 mb-0.5">Arrives</p>
-          <p className="text-xl font-bold text-slate-700">{data.arrivalLabel}</p>
+          <p className="text-xs text-stone-400 mb-0.5">arrives</p>
+          <p className="text-xl font-bold text-stone-700">{data.arrivalLabel}</p>
         </div>
       </div>
 
       {/* Buffer */}
       <div className={`text-xs font-medium mb-4 ${risk.bufferColor}`}>
         {data.minutesBuffer > 0
-          ? <span>+{data.minutesBuffer} min buffer before goal ({desiredArrival})</span>
-          : <span>{Math.abs(data.minutesBuffer)} min past goal ({desiredArrival})</span>
+          ? <span>+{data.minutesBuffer} min before {desiredArrival}</span>
+          : <span>{Math.abs(data.minutesBuffer)} min after {desiredArrival}</span>
         }
       </div>
 
       {/* Stress Index */}
       <div className="space-y-1.5">
         <div className="flex justify-between items-center text-xs">
-          <span className="text-slate-400 font-medium">Stress Index</span>
-          <span className={`font-bold ${stress.text}`}>
-            {data.stressIndex} — {stress.label}
+          <span className="text-stone-400">Traffic stress</span>
+          <span className={`font-semibold ${stress.text}`}>
+            {stress.label}
           </span>
         </div>
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-white/60 rounded-full overflow-hidden">
           <div
             className={`h-full ${stress.bar} rounded-full transition-all duration-500`}
             style={{ width: `${barWidth}%` }}

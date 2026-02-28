@@ -7,14 +7,13 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
+    <header className="sticky top-0 z-50 bg-[#faf9f7]/95 backdrop-blur border-b border-stone-200">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
 
         {/* Logo / Home link */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="font-bold text-slate-800 text-sm">
+          <span className="font-bold text-stone-800 text-sm">
             Aloha<span className="text-blue-500">Shift</span>
-            <span className="text-slate-400">.com</span>
           </span>
         </Link>
 
@@ -25,7 +24,7 @@ export default function Navbar() {
             className={`px-3 py-1.5 rounded-lg font-medium transition ${
               pathname === "/"
                 ? "bg-blue-50 text-blue-600"
-                : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
             }`}
           >
             <span className="hidden sm:inline">Plan My Commute</span>
@@ -37,7 +36,7 @@ export default function Navbar() {
             className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${
               pathname === "/community"
                 ? "bg-emerald-50 text-emerald-600"
-                : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
             }`}
           >
             <span className="inline-flex items-center justify-center w-4 h-4 bg-emerald-500 text-white rounded-full text-xs font-bold leading-none">+</span>
@@ -49,8 +48,8 @@ export default function Navbar() {
             href="/data-sources"
             className={`px-3 py-1.5 rounded-lg font-medium transition hidden sm:block ${
               pathname === "/data-sources"
-                ? "bg-slate-100 text-slate-700"
-                : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                ? "bg-stone-100 text-stone-700"
+                : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
             }`}
           >
             Data Sources
