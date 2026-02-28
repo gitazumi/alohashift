@@ -10,7 +10,7 @@ export default function HeroSection() {
 
       {/* Background photo */}
       <Image
-        src="/backgrand2.png"
+        src="/backgrand3.jpg"
         alt="Hawaii traffic"
         fill
         className="object-cover object-bottom"
