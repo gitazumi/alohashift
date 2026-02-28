@@ -13,7 +13,7 @@ export default function HeroSection() {
         src="/backgrand.jpg"
         alt="Hawaii traffic"
         fill
-        className="object-cover object-center"
+        className="object-cover object-bottom"
         priority
       />
 
