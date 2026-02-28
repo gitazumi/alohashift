@@ -262,11 +262,11 @@ export default function HomePage() {
         )}
 
         {/* Community Data CTA — always visible, just above the page footer */}
-        <div className="relative overflow-hidden rounded-3xl bg-zinc-950 px-8 py-10 text-center">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 px-8 py-10 text-center">
           {/* Subtle glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
           {/* Top edge line */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent" />
 
           <div className="relative">
             {/* Eyebrow */}
@@ -278,7 +278,7 @@ export default function HomePage() {
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 tracking-tight">
               Your commute data makes us smarter.
             </h2>
-            <p className="text-sm text-zinc-400 max-w-md mx-auto leading-relaxed mb-8">
+            <p className="text-sm text-blue-200/60 max-w-md mx-auto leading-relaxed mb-8">
               Real commute times from real Oahu drivers power our predictions.
               Takes less than 2 minutes — no account needed.
             </p>
