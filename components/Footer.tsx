@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-1">
             <p className="text-sm font-bold text-white">
-              Aloha<span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Shift</span>
+              Aloha<span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Shift</span><span className="text-zinc-600 font-light">.com</span>
             </p>
             <p className="text-xs text-zinc-500">Built in Hawaii for Hawaii commuters.</p>
             <p className="text-xs text-zinc-700">© {new Date().getFullYear()} AlohaShift. All rights reserved.</p>

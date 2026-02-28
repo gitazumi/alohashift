@@ -177,16 +177,22 @@ export default function HomePage() {
             })()}
 
             {/* Route summary */}
-            <div className="bg-white rounded-xl border border-stone-200 px-4 py-3 space-y-1.5">
-              <div className="flex items-start gap-2.5 text-sm">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5"></span>
-                <span className="font-medium text-stone-700 break-words min-w-0">{result.origin}</span>
+            <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+              <div className="flex items-start gap-3 px-4 py-3 border-b border-stone-100">
+                <span className="text-xs font-semibold text-stone-400 w-7 shrink-0 mt-0.5 text-right">From</span>
+                <div className="flex items-start gap-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5"></span>
+                  <span className="text-sm font-medium text-stone-700 break-words">{result.origin}</span>
+                </div>
               </div>
-              <div className="flex items-start gap-2.5 text-sm">
-                <span className="w-2 h-2 rounded-full bg-red-400 shrink-0 mt-1.5"></span>
-                <span className="font-medium text-stone-700 break-words min-w-0">{result.destination}</span>
+              <div className="flex items-start gap-3 px-4 py-3 border-b border-stone-100">
+                <span className="text-xs font-semibold text-stone-400 w-7 shrink-0 mt-0.5 text-right">To</span>
+                <div className="flex items-start gap-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-red-400 shrink-0 mt-1.5"></span>
+                  <span className="text-sm font-medium text-stone-700 break-words">{result.destination}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-stone-400 pt-0.5 border-t border-stone-100">
+              <div className="flex items-center gap-1.5 px-4 py-2.5 text-xs text-stone-400">
                 <span>Must arrive by</span>
                 <span className="font-semibold text-stone-600">{result.desiredArrival}</span>
               </div>
@@ -256,22 +262,37 @@ export default function HomePage() {
         )}
 
         {/* Community Data CTA — always visible, just above the page footer */}
-        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
-          <div className="flex-1 text-center sm:text-left">
-            <p className="text-sm font-semibold text-emerald-800 mb-0.5">
-              Help make AlohaShift more accurate
+        <div className="relative overflow-hidden rounded-3xl bg-zinc-950 px-8 py-10 text-center">
+          {/* Subtle glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+          {/* Top edge line */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+
+          <div className="relative">
+            {/* Eyebrow */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-emerald-400 text-xs mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+              Community-powered predictions
+            </div>
+
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 tracking-tight">
+              Your commute data makes us smarter.
+            </h2>
+            <p className="text-sm text-zinc-400 max-w-md mx-auto leading-relaxed mb-8">
+              Real commute times from real Oahu drivers power our predictions.
+              Takes less than 2 minutes — no account needed.
             </p>
-            <p className="text-xs text-emerald-700 leading-relaxed">
-              Share your real commute times and see how predictions compare to reality.
-              Takes less than 2 minutes · No account needed.
-            </p>
+
+            <Link
+              href="/community"
+              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold px-7 py-3.5 rounded-xl transition text-sm shadow-lg shadow-emerald-500/30"
+            >
+              Submit Your Commute Data
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </Link>
           </div>
-          <Link
-            href="/community"
-            className="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm whitespace-nowrap"
-          >
-            Submit Your Commute Data →
-          </Link>
         </div>
 
       </div>
