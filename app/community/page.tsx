@@ -4,6 +4,27 @@ import { useState } from "react";
 import Link from "next/link";
 import PlaceAutocomplete from "@/components/PlaceAutocomplete";
 
+const STORAGE_KEY = "alohashift_route";
+
+function loadSavedRoute(): { origin: string; destination: string } {
+  if (typeof window === "undefined") return { origin: "", destination: "" };
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { origin: "", destination: "" };
+    return JSON.parse(raw);
+  } catch {
+    return { origin: "", destination: "" };
+  }
+}
+
+function saveRoute(origin: string, destination: string) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ origin, destination }));
+  } catch {
+    // ignore
+  }
+}
+
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 // Get today's day name in Hawaii Standard Time (UTC-10)
@@ -37,12 +58,13 @@ function calcActualMinutes(dep: string, arr: string): number | null {
 }
 
 export default function CommunityPage() {
+  const saved = loadSavedRoute();
   const [form, setForm] = useState({
     dayOfWeek: getTodayHawaii(),
     departureTime: "",  // "HH:MM" from <input type="time">
     arrivalTime: "",    // "HH:MM" from <input type="time">
-    from: "",
-    to: "",
+    from: saved.origin,
+    to: saved.destination,
     notes: "",
   });
 
@@ -191,14 +213,20 @@ export default function CommunityPage() {
                 label="From (departure location) *"
                 placeholder="e.g. Ala Moana Center, Honolulu"
                 value={form.from}
-                onChange={(val) => setForm({ ...form, from: val })}
+                onChange={(val) => {
+                  setForm({ ...form, from: val });
+                  saveRoute(val, form.to);
+                }}
                 icon="origin"
               />
               <PlaceAutocomplete
                 label="To (destination) *"
                 placeholder="e.g. Honolulu International Airport"
                 value={form.to}
-                onChange={(val) => setForm({ ...form, to: val })}
+                onChange={(val) => {
+                  setForm({ ...form, to: val });
+                  saveRoute(form.from, val);
+                }}
                 icon="destination"
               />
             </div>
