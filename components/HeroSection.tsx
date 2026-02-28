@@ -8,10 +8,10 @@ export default function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-zinc-950 px-6 py-24 md:py-32">
 
-      {/* Background photo — H-1 Freeway Honolulu (Wikimedia Commons, public domain) */}
+      {/* Background photo */}
       <Image
-        src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Honolulu_H-1_Freeway_7-15-2014_3.jpg"
-        alt="H-1 Freeway Honolulu Hawaii"
+        src="/backgrand.jpg"
+        alt="Hawaii traffic"
         fill
         className="object-cover object-center"
         priority
