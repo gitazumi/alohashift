@@ -18,7 +18,7 @@ export default function HeroSection() {
       />
 
       {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-zinc-950/65" />
+      <div className="absolute inset-0 bg-zinc-950/45" />
 
       {/* Top edge glow */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/60 to-transparent pointer-events-none" />
