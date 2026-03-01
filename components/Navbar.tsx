@@ -18,7 +18,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-8 w-full flex items-center justify-between">
 
         <Link href="/" className="text-[14px] font-semibold text-[#111827] tracking-tight">
-          AlohaShift
+          AlohaShift.com
         </Link>
 
         <nav className="flex items-center gap-8">
@@ -26,7 +26,7 @@ export default function Navbar() {
             Analysis
           </Link>
           <Link href="/community" className={linkClass("/community")}>
-            Community Data
+            Submit commute data
           </Link>
           <Link href="/data-sources" className={linkClass("/data-sources")}>
             Methodology

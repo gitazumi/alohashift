@@ -109,121 +109,98 @@ export default function HomePage() {
         {/* Page header */}
         <div className="mb-8 pb-6 border-b border-[#E5E7EB]">
           <h1 className="text-[28px] font-semibold text-[#111827] tracking-tight">
-            Oahu Commute Analysis
+            Oahu Commute Optimization
           </h1>
-          <p className="text-[14px] text-[#6B7280] mt-1">
-            Compare departure windows · H-1 corridor · Real-time traffic data
+          <p className="text-[17px] text-[#111827] mt-2 leading-snug">
+            Traffic isn&apos;t random.<br />
+            It depends on when we leave.
+          </p>
+          <p className="text-[12px] text-[#9CA3AF] mt-2">
+            Island-wide departure time modeling · Real-time ETA sampling
           </p>
         </div>
 
-        {/* 2-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 items-start">
+        {/* Input Form — single column, full width */}
+        <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
 
-          {/* ── Left: Input Panel ── */}
-          <div className="lg:sticky lg:top-[88px]">
-            <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
+        {/* Error */}
+        {error && (
+          <div className="border border-[#E5E7EB] rounded-[4px] px-4 py-3 text-[13px] text-[#B45309] bg-white mt-6">
+            <span className="font-medium">Error:</span> {error}
           </div>
+        )}
 
-          {/* ── Right: Results ── */}
-          <div>
-            {/* Error */}
-            {error && (
-              <div className="border border-[#E5E7EB] rounded-[4px] px-4 py-3 text-[13px] text-[#B45309] bg-white mb-6">
-                <span className="font-medium">Error:</span> {error}
-              </div>
-            )}
-
-            {/* Empty state */}
-            {!result && !isLoading && !error && (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <div className="w-10 h-10 border border-[#E5E7EB] rounded-full flex items-center justify-center mb-4">
-                  <svg className="w-5 h-5 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-                  </svg>
-                </div>
-                <p className="text-[14px] text-[#6B7280]">Enter origin, destination, and departure window</p>
-                <p className="text-[13px] text-[#9CA3AF] mt-1">then click Analyze to see commute time data</p>
-              </div>
-            )}
-
-            {/* Loading */}
-            {isLoading && (
-              <div className="flex items-center gap-3 py-12">
-                <svg className="animate-spin w-4 h-4 text-[#2563EB]" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                <span className="text-[14px] text-[#6B7280]">Querying traffic data...</span>
-              </div>
-            )}
-
-            {result && (
-              <div>
-                {/* School day status */}
-                {(() => {
-                  const schoolInfo = isTodaySchoolDay();
-                  return (
-                    <div className="flex items-center gap-2 mb-5 text-[12px] text-[#6B7280]">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${schoolInfo.isSchoolDay ? "bg-[#2563EB]" : "bg-[#9CA3AF]"}`} />
-                      {schoolInfo.isSchoolDay
-                        ? "School day — school traffic patterns applied"
-                        : `School not in session (${schoolInfo.reason}) — lighter traffic expected`}
-                    </div>
-                  );
-                })()}
-
-                {/* Route summary */}
-                <div className="mb-5 text-[13px] text-[#6B7280] space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">From</span>
-                    <span className="text-[#111827]">{result.origin}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">To</span>
-                    <span className="text-[#111827]">{result.destination}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">Goal</span>
-                    <span className="text-[#111827]">{result.desiredArrival}</span>
-                  </div>
-                </div>
-
-                {/* Timeline header */}
-                <div className="flex items-center gap-4 py-2 border-b border-[#E5E7EB] mb-0 text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wide px-2 -mx-2">
-                  <span className="w-[72px]">Depart</span>
-                  <span className="w-[64px]">Travel</span>
-                  <span className="flex-1">Arrives</span>
-                  <span className="w-[96px] text-right">Buffer</span>
-                  <span className="w-[72px] text-right">Status</span>
-                </div>
-
-                {/* Timeline rows */}
-                <div>
-                  {result.stressData.map((data) => (
-                    <ResultCard
-                      key={data.departureLabel}
-                      data={data}
-                      desiredArrival={result.desiredArrival}
-                    />
-                  ))}
-                </div>
-
-                {/* AI Pattern comment */}
-                {aiComment && (
-                  <div className="mt-6 text-[13px] text-[#6B7280] leading-relaxed border-l-2 border-[#E5E7EB] pl-4">
-                    <span className="font-medium text-[#111827]">{aiComment.headline}</span>{" "}
-                    {aiComment.detail}
-                  </div>
-                )}
-              </div>
-            )}
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex items-center gap-3 py-8 mt-6">
+            <svg className="animate-spin w-4 h-4 text-[#2563EB]" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <span className="text-[14px] text-[#6B7280]">Querying traffic data...</span>
           </div>
+        )}
 
-        </div>
-
-        {/* ── Full-width sections ── */}
+        {/* Results — appear below form after Analyze */}
         {result && (
-          <div className="mt-12 space-y-0">
+          <div className="mt-10">
+
+            {/* School day status */}
+            {(() => {
+              const schoolInfo = isTodaySchoolDay();
+              return (
+                <div className="flex items-center gap-2 mb-5 text-[12px] text-[#6B7280]">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${schoolInfo.isSchoolDay ? "bg-[#2563EB]" : "bg-[#9CA3AF]"}`} />
+                  {schoolInfo.isSchoolDay
+                    ? "School day — school traffic patterns applied"
+                    : `School not in session (${schoolInfo.reason}) — lighter traffic expected`}
+                </div>
+              );
+            })()}
+
+            {/* Route summary */}
+            <div className="mb-5 text-[13px] text-[#6B7280] space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">From</span>
+                <span className="text-[#111827]">{result.origin}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">To</span>
+                <span className="text-[#111827]">{result.destination}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">Goal</span>
+                <span className="text-[#111827]">{result.desiredArrival}</span>
+              </div>
+            </div>
+
+            {/* Timeline header */}
+            <div className="flex items-center gap-4 py-2 border-b border-[#E5E7EB] mb-0 text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wide px-2 -mx-2">
+              <span className="w-[72px]">Depart</span>
+              <span className="w-[64px]">Travel</span>
+              <span className="flex-1">Arrives</span>
+              <span className="w-[96px] text-right">Buffer</span>
+              <span className="w-[72px] text-right">Status</span>
+            </div>
+
+            {/* Timeline rows */}
+            <div>
+              {result.stressData.map((data) => (
+                <ResultCard
+                  key={data.departureLabel}
+                  data={data}
+                  desiredArrival={result.desiredArrival}
+                />
+              ))}
+            </div>
+
+            {/* AI Pattern comment */}
+            {aiComment && (
+              <div className="mt-6 text-[13px] text-[#6B7280] leading-relaxed border-l-2 border-[#E5E7EB] pl-4">
+                <span className="font-medium text-[#111827]">{aiComment.headline}</span>{" "}
+                {aiComment.detail}
+              </div>
+            )}
 
             {/* Traffic Curve */}
             <TrafficCurve stressData={result.stressData} desiredArrival={result.desiredArrival} />
