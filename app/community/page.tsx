@@ -27,14 +27,12 @@ function saveRoute(origin: string, destination: string) {
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-// Get today's day name in Hawaii Standard Time (UTC-10)
 function getTodayHawaii(): string {
   const hawaiiMs = Date.now() + (-10 * 60 * 60 * 1000);
   const dayIndex = new Date(hawaiiMs).getUTCDay();
   return DAYS[dayIndex];
 }
 
-// Parse "HH:MM" (from <input type="time">) → display "6:53 AM"
 function formatTime(hhmm: string): string {
   if (!hhmm) return "";
   const [hStr, mStr] = hhmm.split(":");
@@ -45,24 +43,28 @@ function formatTime(hhmm: string): string {
   return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
 }
 
-// Calculate travel minutes from two "HH:MM" values
 function calcActualMinutes(dep: string, arr: string): number | null {
   if (!dep || !arr) return null;
   const [dh, dm] = dep.split(":").map(Number);
   const [ah, am] = arr.split(":").map(Number);
   let diff = (ah * 60 + am) - (dh * 60 + dm);
   if (diff <= 0) diff += 24 * 60;
-  if (diff < 5) return null;   // less than 5 min is not a real commute
-  if (diff > 240) return null; // more than 4h is probably wrong
+  if (diff < 5) return null;
+  if (diff > 240) return null;
   return diff;
 }
+
+const inputClass =
+  "w-full px-3 py-2.5 border border-[#E5E7EB] rounded-[6px] text-[14px] text-[#111827] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition placeholder:text-[#9CA3AF]";
+
+const labelClass = "block text-[13px] font-medium text-[#6B7280] mb-1.5";
 
 export default function CommunityPage() {
   const saved = loadSavedRoute();
   const [form, setForm] = useState({
     dayOfWeek: getTodayHawaii(),
-    departureTime: "",  // "HH:MM" from <input type="time">
-    arrivalTime: "",    // "HH:MM" from <input type="time">
+    departureTime: "",
+    arrivalTime: "",
     from: saved.origin,
     to: saved.destination,
     notes: "",
@@ -108,36 +110,30 @@ export default function CommunityPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
+    <main className="min-h-screen bg-[#FAFAFA]">
+      <div className="max-w-2xl mx-auto px-8 pt-8 pb-20">
 
-        {/* Header */}
-        <div>
-          <Link href="/" className="text-sm text-blue-500 hover:text-blue-700 transition">
-            ← Back to AlohaShift
-          </Link>
-          <h1 className="text-3xl font-bold text-slate-800 mt-4">Help Us Get It Right</h1>
-          <p className="text-slate-500 mt-2 leading-relaxed">
-            AlohaShift learns from real Oahu commuters. Your actual drive times help us
-            correct predictions across all routes — not just yours.
+        {/* Page header */}
+        <div className="mb-8 pb-6 border-b border-[#E5E7EB]">
+          <h1 className="text-[28px] font-semibold text-[#111827] tracking-tight">
+            Submit Commute Data
+          </h1>
+          <p className="text-[14px] text-[#6B7280] mt-1">
+            Help improve prediction accuracy · No account needed · Community-powered
           </p>
         </div>
 
-        {/* Why it matters */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-800 space-y-1">
-          <p className="font-semibold">Your data travels further than you think</p>
-          <p>
-            We analyze which roads your route uses — H1, Pali Highway, Likelike, H3, and more.
-            When enough commuters share times on the same corridors, AlohaShift gets more accurate
-            for <em>every</em> route that uses those roads, not just yours.
-          </p>
+        {/* Info note */}
+        <div className="border border-[#E5E7EB] rounded-[4px] bg-white px-4 py-3 mb-6 text-[13px] text-[#6B7280] leading-relaxed">
+          <span className="font-medium text-[#111827]">Your data travels further than you think.</span>{" "}
+          We analyze which corridors your route uses — H1, Pali Hwy, Likelike, H3, and more.
+          When enough commuters share times on the same corridors, predictions improve for every overlapping route.
         </div>
 
         {status === "success" ? (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center space-y-3">
-            <p className="text-4xl">🤙</p>
-            <p className="text-lg font-semibold text-emerald-800">Mahalo! Data received.</p>
-            <p className="text-sm text-emerald-600">
+          <div className="border border-[#E5E7EB] rounded-[4px] bg-white px-6 py-10 text-center">
+            <p className="text-[14px] font-semibold text-[#111827] mb-1">Data received — mahalo.</p>
+            <p className="text-[13px] text-[#6B7280] mb-5">
               Your commute report helps make AlohaShift more accurate for all Oahu commuters.
             </p>
             <button
@@ -145,23 +141,23 @@ export default function CommunityPage() {
                 setStatus("idle");
                 setForm({ ...form, departureTime: "", arrivalTime: "", notes: "" });
               }}
-              className="mt-2 text-sm text-emerald-700 underline hover:no-underline"
+              className="text-[13px] text-[#2563EB] hover:text-[#1D4ED8] transition"
             >
-              Submit another report
+              Submit another report →
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="border border-[#E5E7EB] rounded-[4px] bg-white p-6 space-y-5">
 
             {/* Day of Week */}
             <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">
-                Day of Week <span className="text-red-400">*</span>
+              <label className={labelClass}>
+                Day of week <span className="text-[#B45309]">*</span>
               </label>
               <select
                 value={form.dayOfWeek}
                 onChange={e => setForm({ ...form, dayOfWeek: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className={inputClass}
               >
                 {DAYS.map(d => <option key={d}>{d}</option>)}
               </select>
@@ -170,38 +166,40 @@ export default function CommunityPage() {
             {/* Departure + Arrival Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">
-                  Departure Time <span className="text-red-400">*</span>
+                <label className={labelClass}>
+                  Departure time <span className="text-[#B45309]">*</span>
                 </label>
                 <input
                   type="time"
                   value={form.departureTime}
                   onChange={e => setForm({ ...form, departureTime: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">
-                  Arrival Time <span className="text-red-400">*</span>
+                <label className={labelClass}>
+                  Arrival time <span className="text-[#B45309]">*</span>
                 </label>
                 <input
                   type="time"
                   value={form.arrivalTime}
                   onChange={e => setForm({ ...form, arrivalTime: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className={inputClass}
                 />
               </div>
             </div>
 
             {/* Calculated actual travel time */}
             {actualMinutes !== null && (
-              <div className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
-                <span className="text-slate-400 text-lg">⏱</span>
+              <div className="flex items-center gap-4 border border-[#E5E7EB] rounded-[4px] px-4 py-3">
                 <div>
-                  <p className="text-xs text-slate-400">Actual travel time</p>
-                  <p className="text-xl font-bold text-slate-700">{actualMinutes} min</p>
+                  <p className="text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wide mb-0.5">Actual travel time</p>
+                  <p className="text-[22px] font-semibold text-[#111827] tabular-nums leading-none">
+                    {actualMinutes}
+                    <span className="text-[14px] font-normal text-[#6B7280] ml-1">min</span>
+                  </p>
                 </div>
-                <p className="text-xs text-slate-400 ml-auto">
+                <p className="text-[12px] text-[#9CA3AF] ml-auto tabular-nums">
                   {formatTime(form.departureTime)} → {formatTime(form.arrivalTime)}
                 </p>
               </div>
@@ -209,59 +207,71 @@ export default function CommunityPage() {
 
             {/* From / To */}
             <div className="space-y-4">
-              <PlaceAutocomplete
-                label="From (departure location) *"
-                placeholder="e.g. Ala Moana Center, Honolulu"
-                value={form.from}
-                onChange={(val) => {
-                  setForm({ ...form, from: val });
-                  saveRoute(val, form.to);
-                }}
-                icon="origin"
-              />
-              <PlaceAutocomplete
-                label="To (destination) *"
-                placeholder="e.g. Honolulu International Airport"
-                value={form.to}
-                onChange={(val) => {
-                  setForm({ ...form, to: val });
-                  saveRoute(form.from, val);
-                }}
-                icon="destination"
-              />
+              <div>
+                <label className={labelClass}>
+                  From <span className="text-[#B45309]">*</span>
+                </label>
+                <PlaceAutocomplete
+                  label=""
+                  placeholder="e.g. Ala Moana Center, Honolulu"
+                  value={form.from}
+                  onChange={(val) => {
+                    setForm({ ...form, from: val });
+                    saveRoute(val, form.to);
+                  }}
+                  icon="origin"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>
+                  To <span className="text-[#B45309]">*</span>
+                </label>
+                <PlaceAutocomplete
+                  label=""
+                  placeholder="e.g. Honolulu International Airport"
+                  value={form.to}
+                  onChange={(val) => {
+                    setForm({ ...form, to: val });
+                    saveRoute(form.from, val);
+                  }}
+                  icon="destination"
+                />
+              </div>
             </div>
 
             {/* Notes */}
             <div>
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">
-                Notes (optional)
+              <label className={labelClass}>
+                Notes <span className="text-[12px] font-normal text-[#9CA3AF]">(optional)</span>
               </label>
               <textarea
                 rows={3}
                 placeholder="e.g. Accident near Halawa. H1 backed up from the merge."
                 value={form.notes}
                 onChange={e => setForm({ ...form, notes: e.target.value })}
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+                className={`${inputClass} resize-none`}
               />
             </div>
 
             {/* Error */}
             {errorMsg && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2">{errorMsg}</p>
+              <div className="border border-[#E5E7EB] rounded-[4px] px-4 py-3 text-[13px] text-[#B45309]">
+                <span className="font-medium">Error:</span> {errorMsg}
+              </div>
             )}
 
             {/* Submit */}
             <button
               type="submit"
               disabled={status === "submitting"}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold py-3 rounded-xl transition text-sm"
+              className="w-full h-11 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[14px] font-medium rounded-[6px] transition"
             >
-              {status === "submitting" ? "Submitting..." : "Submit Commute Report 🤙"}
+              {status === "submitting" ? "Submitting..." : "Submit commute report →"}
             </button>
 
-            <p className="text-xs text-slate-400 text-center">
-              Your data is used only to improve AlohaShift predictions.
-              See our <Link href="/privacy" className="underline">Privacy Policy</Link>.
+            <p className="text-[12px] text-[#9CA3AF] text-center">
+              Used only to improve AlohaShift predictions.{" "}
+              <Link href="/privacy" className="text-[#2563EB] hover:text-[#1D4ED8]">Privacy Policy</Link>
             </p>
           </form>
         )}
