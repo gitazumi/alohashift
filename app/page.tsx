@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import HeroSection from "@/components/HeroSection";
 import InputForm from "@/components/InputForm";
 import ResultCard from "@/components/ResultCard";
 import TrafficCurve from "@/components/TrafficCurve";
@@ -13,6 +12,7 @@ import { calculateStressData, generateDepartureTimes } from "@/lib/stressIndex";
 import { generateAIComment } from "@/lib/aiComments";
 import { isTodaySchoolDay } from "@/lib/schoolCalendar";
 import type { ETAResponse, FormValues, StressData } from "@/types";
+
 interface ResultState {
   stressData: StressData[];
   origin: string;
@@ -52,18 +52,11 @@ export default function HomePage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
 
       const data: ETAResponse = await response.json();
+      if (data.error) throw new Error(data.error);
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      // Parse desired arrival as timestamp — must match the same targetDay date
-      // that generateDepartureTimes uses (Hawaii Standard Time = UTC-10)
       const [hours, minutes] = values.desiredArrivalTime.split(":").map(Number);
       const HAWAII_OFFSET_MS = -10 * 60 * 60 * 1000;
       const nowUtcMs = Date.now();
@@ -71,9 +64,6 @@ export default function HomePage() {
       const nowHawaii = new Date(nowHawaiiMs);
       const hawaiiDayOfWeek = nowHawaii.getUTCDay();
       const daysAhead = (values.targetDay - hawaiiDayOfWeek + 7) % 7;
-      // IMPORTANT: Normalize to Hawaii midnight before extracting year/month/day.
-      // When Hawaii local time is past 14:00, nowHawaiiMs in UTC rolls to the next
-      // calendar day, causing getUTCDate() to return the wrong date.
       const hawaiiMidnightMs = nowHawaiiMs - (
         nowHawaii.getUTCHours() * 3600000 +
         nowHawaii.getUTCMinutes() * 60000 +
@@ -82,42 +72,25 @@ export default function HomePage() {
       );
       const targetMidnightMs = hawaiiMidnightMs + daysAhead * 24 * 60 * 60 * 1000;
       const targetHawaii = new Date(targetMidnightMs);
-      const year  = targetHawaii.getUTCFullYear();
+      const year = targetHawaii.getUTCFullYear();
       const month = targetHawaii.getUTCMonth();
-      const day   = targetHawaii.getUTCDate();
-      // Hawaii HH:MM → UTC = HH:MM + 10h
+      const day = targetHawaii.getUTCDate();
+
       let desiredArrivalTimestamp = Math.floor(
         Date.UTC(year, month, day, hours + 10, minutes, 0, 0) / 1000
       );
-
-      // generateDepartureTimes pushes timestamps +7 days when the start time
-      // is already in the past. desiredArrivalTimestamp must follow the same
-      // shift — otherwise all arrival times will be later than the "today"
-      // desired arrival and every slot shows latenessRisk=red.
       const startH = Number(values.startTime.split(":")[0]);
       const startM = Number(values.startTime.split(":")[1]);
       const startUtcMs = Date.UTC(year, month, day, startH + 10, startM, 0, 0);
-      if (startUtcMs < nowUtcMs) {
-        desiredArrivalTimestamp += 7 * 24 * 60 * 60;
-      }
+      if (startUtcMs < nowUtcMs) desiredArrivalTimestamp += 7 * 24 * 60 * 60;
 
-      const stressData = calculateStressData(
-        data.results,
-        data.freeFlowDuration,
-        desiredArrivalTimestamp
-      );
-      // Format desired arrival for display
+      const stressData = calculateStressData(data.results, data.freeFlowDuration, desiredArrivalTimestamp);
       const displayHours = hours % 12 || 12;
       const displayMinutes = minutes.toString().padStart(2, "0");
       const ampm = hours >= 12 ? "PM" : "AM";
       const desiredArrival = `${displayHours}:${displayMinutes} ${ampm}`;
 
-      setResult({
-        stressData,
-        origin: values.origin,
-        destination: values.destination,
-        desiredArrival,
-      });
+      setResult({ stressData, origin: values.origin, destination: values.destination, desiredArrival });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -125,166 +98,181 @@ export default function HomePage() {
     }
   };
 
-  // Derived data for panels
-  const aiComment =
-    result
-      ? generateAIComment({
-          stressData: result.stressData,
-          sweetSpotIndex: -1,
-          origin: result.origin,
-          destination: result.destination,
-        })
-      : null;
+  const aiComment = result
+    ? generateAIComment({ stressData: result.stressData, sweetSpotIndex: -1, origin: result.origin, destination: result.destination })
+    : null;
 
   return (
-    <main className="min-h-screen bg-white">
-      <HeroSection />
+    <main className="min-h-screen bg-[#FAFAFA]">
+      <div className="max-w-6xl mx-auto px-8 pt-8 pb-20">
 
-      <div className="max-w-5xl mx-auto px-4 pb-12 space-y-10">
-        {/* Input Form — floats up from hero */}
-        <div className="relative z-10 -mt-10 bg-white rounded-3xl border border-zinc-100 shadow-2xl overflow-hidden">
-          <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
+        {/* Page header */}
+        <div className="mb-8 pb-6 border-b border-[#E5E7EB]">
+          <h1 className="text-[28px] font-semibold text-[#111827] tracking-tight">
+            Oahu Commute Analysis
+          </h1>
+          <p className="text-[14px] text-[#6B7280] mt-1">
+            Compare departure windows · H-1 corridor · Real-time traffic data
+          </p>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-sm text-red-600">
-            <span className="font-semibold">Error:</span> {error}
+        {/* 2-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 items-start">
+
+          {/* ── Left: Input Panel ── */}
+          <div className="lg:sticky lg:top-[88px]">
+            <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
           </div>
-        )}
 
-        {/* Results */}
+          {/* ── Right: Results ── */}
+          <div>
+            {/* Error */}
+            {error && (
+              <div className="border border-[#E5E7EB] rounded-[4px] px-4 py-3 text-[13px] text-[#B45309] bg-white mb-6">
+                <span className="font-medium">Error:</span> {error}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!result && !isLoading && !error && (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="w-10 h-10 border border-[#E5E7EB] rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-5 h-5 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+                  </svg>
+                </div>
+                <p className="text-[14px] text-[#6B7280]">Enter origin, destination, and departure window</p>
+                <p className="text-[13px] text-[#9CA3AF] mt-1">then click Analyze to see commute time data</p>
+              </div>
+            )}
+
+            {/* Loading */}
+            {isLoading && (
+              <div className="flex items-center gap-3 py-12">
+                <svg className="animate-spin w-4 h-4 text-[#2563EB]" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span className="text-[14px] text-[#6B7280]">Querying traffic data...</span>
+              </div>
+            )}
+
+            {result && (
+              <div>
+                {/* School day status */}
+                {(() => {
+                  const schoolInfo = isTodaySchoolDay();
+                  return (
+                    <div className="flex items-center gap-2 mb-5 text-[12px] text-[#6B7280]">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${schoolInfo.isSchoolDay ? "bg-[#2563EB]" : "bg-[#9CA3AF]"}`} />
+                      {schoolInfo.isSchoolDay
+                        ? "School day — school traffic patterns applied"
+                        : `School not in session (${schoolInfo.reason}) — lighter traffic expected`}
+                    </div>
+                  );
+                })()}
+
+                {/* Route summary */}
+                <div className="mb-5 text-[13px] text-[#6B7280] space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">From</span>
+                    <span className="text-[#111827]">{result.origin}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">To</span>
+                    <span className="text-[#111827]">{result.destination}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">Goal</span>
+                    <span className="text-[#111827]">{result.desiredArrival}</span>
+                  </div>
+                </div>
+
+                {/* Timeline header */}
+                <div className="flex items-center gap-4 py-2 border-b border-[#E5E7EB] mb-0 text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wide px-2 -mx-2">
+                  <span className="w-[72px]">Depart</span>
+                  <span className="w-[64px]">Travel</span>
+                  <span className="flex-1">Arrives</span>
+                  <span className="w-[96px] text-right">Buffer</span>
+                  <span className="w-[72px] text-right">Status</span>
+                </div>
+
+                {/* Timeline rows */}
+                <div>
+                  {result.stressData.map((data) => (
+                    <ResultCard
+                      key={data.departureLabel}
+                      data={data}
+                      desiredArrival={result.desiredArrival}
+                    />
+                  ))}
+                </div>
+
+                {/* AI Pattern comment */}
+                {aiComment && (
+                  <div className="mt-6 text-[13px] text-[#6B7280] leading-relaxed border-l-2 border-[#E5E7EB] pl-4">
+                    <span className="font-medium text-[#111827]">{aiComment.headline}</span>{" "}
+                    {aiComment.detail}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* ── Full-width sections ── */}
         {result && (
-          <div className="space-y-8">
-            {/* School day indicator */}
-            {(() => {
-              const schoolInfo = isTodaySchoolDay();
-              return schoolInfo.isSchoolDay ? (
-                <div className="flex items-center gap-2.5 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm text-blue-700">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
-                  <span>
-                    <span className="font-semibold">School day</span> — predictions include school traffic patterns.
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-700">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
-                  <span>
-                    <span className="font-semibold">School is not in session</span> ({schoolInfo.reason}) — traffic may be lighter than usual.
-                  </span>
-                </div>
-              );
-            })()}
-
-            {/* Route summary */}
-            <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-              <div className="flex items-start gap-3 px-4 py-3 border-b border-stone-100">
-                <span className="text-xs font-semibold text-stone-400 w-7 shrink-0 mt-0.5 text-right">From</span>
-                <div className="flex items-start gap-2 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5"></span>
-                  <span className="text-sm font-medium text-stone-700 break-words">{result.origin}</span>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 px-4 py-3 border-b border-stone-100">
-                <span className="text-xs font-semibold text-stone-400 w-7 shrink-0 mt-0.5 text-right">To</span>
-                <div className="flex items-start gap-2 min-w-0">
-                  <span className="w-2 h-2 rounded-full bg-red-400 shrink-0 mt-1.5"></span>
-                  <span className="text-sm font-medium text-stone-700 break-words">{result.destination}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 px-4 py-2.5 text-xs text-stone-400">
-                <span>Must arrive by</span>
-                <span className="font-semibold text-stone-600">{result.desiredArrival}</span>
-              </div>
-            </div>
-
-            {/* Result Cards Grid */}
-            <section>
-              <h2 className="text-sm font-medium text-stone-400 mb-4">
-                Departure windows
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {result.stressData.map((data) => (
-                  <ResultCard
-                    key={data.departureLabel}
-                    data={data}
-                    desiredArrival={result.desiredArrival}
-                  />
-                ))}
-              </div>
-            </section>
-
-            {/* Route Map */}
-            <RouteMap
-              origin={result.origin}
-              destination={result.destination}
-            />
+          <div className="mt-12 space-y-0">
 
             {/* Traffic Curve */}
-            <TrafficCurve
-              stressData={result.stressData}
-              desiredArrival={result.desiredArrival}
-            />
+            <TrafficCurve stressData={result.stressData} desiredArrival={result.desiredArrival} />
 
-            {/* AI Comment (Pattern Analysis) */}
-            {aiComment && <AIComment comment={aiComment} />}
+            {/* Route Map */}
+            <div className="mt-8">
+              <RouteMap origin={result.origin} destination={result.destination} />
+            </div>
 
-            {/* Collective Impact Simulator */}
+            {/* Collective Impact */}
             {result.stressData.length > 0 && (() => {
               const durations = result.stressData.map((d) => d.durationInTrafficMinutes);
               const freeFlow = Math.min(...result.stressData.map((d) => d.durationMinutes));
               const peakDelay = Math.max(...durations) - freeFlow;
               const worstIdx = durations.indexOf(Math.max(...durations));
-              const bestIdx  = durations.indexOf(Math.min(...durations));
-              const worstSlot = result.stressData[worstIdx];
-              const bestSlot  = result.stressData[bestIdx];
+              const bestIdx = durations.indexOf(Math.min(...durations));
               const personalSavedMin = Math.max(0, durations[worstIdx] - durations[bestIdx]);
               return (
                 <CollectiveImpact
                   peakDelayMinutes={peakDelay}
                   freeFlowMinutes={freeFlow}
                   personalSavedMin={personalSavedMin}
-                  worstLabel={worstSlot.departureLabel}
-                  bestLabel={bestSlot.departureLabel}
+                  worstLabel={result.stressData[worstIdx].departureLabel}
+                  bestLabel={result.stressData[bestIdx].departureLabel}
                 />
               );
             })()}
 
-            {/* Philosophy footer */}
-            <div className="text-center py-8 border-t border-stone-200">
-              <p className="text-xs text-stone-400 max-w-md mx-auto leading-relaxed">
-                AlohaShift presents options — not prescriptions. We do not
-                notify, push, or optimize on your behalf. The decision is always
-                yours.
-              </p>
+            {/* Methodology note */}
+            <div className="mt-8 pt-6 border-t border-[#E5E7EB] text-[12px] text-[#9CA3AF] text-center">
+              AlohaShift presents options — not prescriptions. The decision is always yours.
             </div>
+
           </div>
         )}
 
-        {/* Community Data CTA — always visible, just above the page footer */}
-        <div className="rounded-3xl bg-blue-50 border border-blue-100 px-8 py-10 text-center">
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 text-xs mb-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-            Community-powered predictions
+        {/* ── Community CTA ── */}
+        <div className="mt-16 pt-8 border-t border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-[14px] font-medium text-[#111827]">Help improve prediction accuracy</p>
+            <p className="text-[13px] text-[#6B7280] mt-0.5">
+              Submit real commute times · Community-powered · No account needed
+            </p>
           </div>
-
-          <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-3 tracking-tight">
-            Your commute data makes us smarter.
-          </h2>
-          <p className="text-sm text-stone-500 max-w-md mx-auto leading-relaxed mb-8">
-            Real commute times from real Oahu drivers power our predictions.
-            Takes less than 2 minutes — no account needed.
-          </p>
-
           <Link
             href="/community"
-            className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold px-7 py-3.5 rounded-xl transition text-sm shadow-lg shadow-emerald-500/30"
+            className="shrink-0 text-[13px] font-medium text-[#2563EB] hover:text-[#1D4ED8] transition flex items-center gap-1"
           >
-            Submit Your Commute Data
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-            </svg>
+            Submit commute data →
           </Link>
         </div>
 

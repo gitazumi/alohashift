@@ -1,108 +1,71 @@
 "use client";
 
-import type { StressData, StressLevel } from "@/types";
+import type { StressData } from "@/types";
 
 interface ResultCardProps {
   data: StressData;
   desiredArrival: string;
 }
 
-const riskConfig = {
-  green: {
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    badge: "bg-emerald-500 text-white",
-    label: "On Time ✓",
-    bufferColor: "text-emerald-600",
-  },
-  yellow: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    badge: "bg-amber-400 text-white",
-    label: "Tight",
-    bufferColor: "text-amber-600",
-  },
-  red: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    badge: "bg-red-500 text-white",
-    label: "Late Risk ✗",
-    bufferColor: "text-red-500",
-  },
-};
+function statusConfig(risk: StressData["latenessRisk"], stress: StressData["stressLevel"]) {
+  if (risk === "red") return { color: "text-[#B45309]", label: "Late risk" };
+  if (risk === "yellow") return { color: "text-[#6B7280]", label: "Tight" };
+  // green — use stress level for nuance
+  if (stress === "volatile") return { color: "text-[#6B7280]", label: "On time" };
+  if (stress === "moderate") return { color: "text-[#15803D]", label: "On time" };
+  return { color: "text-[#15803D]", label: "On time" };
+}
 
-const stressConfig: Record<StressLevel, { bar: string; label: string; text: string }> = {
-  stable:   { bar: "bg-emerald-400", label: "Stable",   text: "text-emerald-600" },
-  moderate: { bar: "bg-amber-400",   label: "Moderate", text: "text-amber-600"   },
-  volatile: { bar: "bg-red-400",     label: "Volatile", text: "text-red-500"     },
-};
+function stressLabel(level: StressData["stressLevel"]): { label: string; color: string } {
+  if (level === "stable") return { label: "Stable", color: "text-[#15803D]" };
+  if (level === "moderate") return { label: "Moderate", color: "text-[#6B7280]" };
+  return { label: "Volatile", color: "text-[#B45309]" };
+}
 
 export default function ResultCard({ data, desiredArrival }: ResultCardProps) {
-  const risk = riskConfig[data.latenessRisk];
-  const stress = stressConfig[data.stressLevel];
-  const barWidth = Math.min(100, Math.round(data.stressIndex / 2));
+  const status = statusConfig(data.latenessRisk, data.stressLevel);
+  const stress = stressLabel(data.stressLevel);
 
   return (
-    <div className={`rounded-2xl border p-5 transition-all ${risk.bg} ${risk.border}`}>
+    <div className="flex items-center gap-4 py-4 border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition-colors px-2 -mx-2">
 
-      {/* Header row: badge only, no "DEPARTURE" label */}
-      <div className="flex items-center justify-end mb-3">
-        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${risk.badge}`}>
-          {risk.label}
+      {/* Departure time */}
+      <div className="w-[72px] shrink-0">
+        <span className="text-[22px] font-semibold text-[#111827] tabular-nums leading-none">
+          {data.departureLabel}
         </span>
       </div>
 
-      {/* Departure time */}
-      <p className="text-3xl font-bold text-stone-900 mb-1 leading-none">
-        {data.departureLabel}
-      </p>
-      <p className="text-xs text-stone-400 mb-4">departure</p>
+      {/* Duration */}
+      <div className="w-[64px] shrink-0 text-[14px] text-[#6B7280]">
+        <span className="font-medium text-[#111827] tabular-nums">{data.durationInTrafficMinutes}</span>
+        <span className="text-[12px] ml-0.5">min</span>
+      </div>
 
-      {/* Travel → Arrival */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="text-center">
-          <p className="text-xs text-stone-400 mb-0.5">travel time</p>
-          <p className="text-xl font-bold text-stone-700">
-            {data.durationInTrafficMinutes}
-            <span className="text-sm font-normal text-stone-400 ml-0.5">min</span>
-          </p>
-        </div>
-        <div className="flex-1 flex items-center gap-1">
-          <div className="flex-1 h-px bg-stone-200" />
-          <svg className="w-3 h-3 text-stone-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-          </svg>
-          <div className="flex-1 h-px bg-stone-200" />
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-stone-400 mb-0.5">arrives</p>
-          <p className="text-xl font-bold text-stone-700">{data.arrivalLabel}</p>
-        </div>
+      {/* Arrival */}
+      <div className="flex-1 text-[13px] text-[#6B7280]">
+        → <span className="font-medium text-[#111827]">{data.arrivalLabel}</span>
       </div>
 
       {/* Buffer */}
-      <div className={`text-xs font-medium mb-4 ${risk.bufferColor}`}>
-        {data.minutesBuffer > 0
-          ? <span>+{data.minutesBuffer} min before {desiredArrival}</span>
-          : <span>{Math.abs(data.minutesBuffer)} min after {desiredArrival}</span>
-        }
+      <div className="w-[96px] shrink-0 text-right text-[12px]">
+        {data.minutesBuffer > 0 ? (
+          <span className="text-[#15803D]">+{data.minutesBuffer} min</span>
+        ) : data.minutesBuffer === 0 ? (
+          <span className="text-[#6B7280]">exact</span>
+        ) : (
+          <span className="text-[#B45309]">{Math.abs(data.minutesBuffer)} min late</span>
+        )}
       </div>
 
-      {/* Stress Index */}
-      <div className="space-y-1.5">
-        <div className="flex justify-between items-center text-xs">
-          <span className="text-stone-400">Traffic stress</span>
-          <span className={`font-semibold ${stress.text}`}>
-            {stress.label}
-          </span>
-        </div>
-        <div className="h-1.5 bg-white/60 rounded-full overflow-hidden">
-          <div
-            className={`h-full ${stress.bar} rounded-full transition-all duration-500`}
-            style={{ width: `${barWidth}%` }}
-          />
-        </div>
+      {/* Status */}
+      <div className="w-[72px] shrink-0 text-right">
+        <span className={`text-[12px] font-medium ${status.color}`}>
+          {status.label}
+        </span>
+        <div className={`text-[11px] ${stress.color} mt-0.5`}>{stress.label}</div>
       </div>
+
     </div>
   );
 }
