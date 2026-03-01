@@ -18,7 +18,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-8 w-full flex items-center justify-between">
 
         <Link href="/" className="text-[14px] font-semibold text-[#111827] tracking-tight">
-          AlohaShift.com
+          Aloha<span className="text-[#2563EB]">Shift</span>.com
         </Link>
 
         <nav className="flex items-center gap-8">
