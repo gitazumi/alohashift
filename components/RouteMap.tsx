@@ -39,6 +39,7 @@ export default function RouteMap({ origin, destination }: RouteMapProps) {
           `?size=800x340` +
           `&scale=2` +
           `&maptype=roadmap` +
+          `&language=en` +
           `&path=color:0x3b82f6FF|weight:4|enc:${encodeURIComponent(polyline)}` +
           `&markers=color:green|label:A|${encodeURIComponent(origin)}` +
           `&markers=color:red|label:B|${encodeURIComponent(destination)}` +
@@ -52,6 +53,7 @@ export default function RouteMap({ origin, destination }: RouteMapProps) {
           `?size=800x340` +
           `&scale=2` +
           `&maptype=roadmap` +
+          `&language=en` +
           `&markers=color:green|label:A|${encodeURIComponent(origin)}` +
           `&markers=color:red|label:B|${encodeURIComponent(destination)}` +
           `&key=${apiKey}`;
