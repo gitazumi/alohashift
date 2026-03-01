@@ -113,10 +113,11 @@ export default function HomePage() {
           </h1>
           <p className="text-[17px] text-[#111827] mt-2 leading-snug">
             Traffic isn&apos;t random.<br />
-            It depends on when we leave.
+            It depends on when we leave.<br />
+            Community-calibrated predictions using real commuter data.
           </p>
           <p className="text-[12px] text-[#9CA3AF] mt-2">
-            Island-wide departure time modeling · Real-time ETA sampling
+            Island-wide departure time modeling · School-aware calibration
           </p>
         </div>
 
