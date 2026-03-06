@@ -30,25 +30,25 @@ export default function ResultCard({ data, desiredArrival }: ResultCardProps) {
     <div className="flex items-center gap-4 py-4 border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition-colors px-2 -mx-2">
 
       {/* Departure time */}
-      <div className="w-[72px] shrink-0">
-        <span className="text-[22px] font-semibold text-[#111827] tabular-nums leading-none">
+      <div className="w-[80px] shrink-0">
+        <span className="text-[24px] font-semibold text-[#111827] tabular-nums leading-none">
           {data.departureLabel}
         </span>
       </div>
 
       {/* Duration */}
-      <div className="w-[64px] shrink-0 text-[14px] text-[#6B7280]">
+      <div className="w-[72px] shrink-0 text-[15px] text-[#6B7280]">
         <span className="font-medium text-[#111827] tabular-nums">{data.durationInTrafficMinutes}</span>
-        <span className="text-[12px] ml-0.5">min</span>
+        <span className="text-[13px] ml-0.5">min</span>
       </div>
 
       {/* Arrival */}
-      <div className="flex-1 text-[13px] text-[#6B7280]">
+      <div className="flex-1 text-[15px] text-[#6B7280]">
         → <span className="font-medium text-[#111827]">{data.arrivalLabel}</span>
       </div>
 
       {/* Buffer */}
-      <div className="w-[96px] shrink-0 text-right text-[12px]">
+      <div className="w-[100px] shrink-0 text-right text-[14px]">
         {data.minutesBuffer > 0 ? (
           <span className="text-[#15803D]">+{data.minutesBuffer} min</span>
         ) : data.minutesBuffer === 0 ? (
@@ -59,11 +59,11 @@ export default function ResultCard({ data, desiredArrival }: ResultCardProps) {
       </div>
 
       {/* Status */}
-      <div className="w-[72px] shrink-0 text-right">
-        <span className={`text-[12px] font-medium ${status.color}`}>
+      <div className="w-[80px] shrink-0 text-right">
+        <span className={`text-[14px] font-medium ${status.color}`}>
           {status.label}
         </span>
-        <div className={`text-[11px] ${stress.color} mt-0.5`}>{stress.label}</div>
+        <div className={`text-[12px] ${stress.color} mt-0.5`}>{stress.label}</div>
       </div>
 
     </div>

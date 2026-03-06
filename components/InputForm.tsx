@@ -50,9 +50,9 @@ function loadSavedRoute(): { origin: string; destination: string } {
 }
 
 const inputClass =
-  "w-full px-3 py-2.5 border border-[#E5E7EB] rounded-[6px] text-[14px] text-[#111827] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition placeholder:text-[#9CA3AF]";
+  "w-full px-3 py-2.5 border border-[#E5E7EB] rounded-[6px] text-[15px] text-[#111827] bg-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition placeholder:text-[#9CA3AF]";
 
-const labelClass = "block text-[13px] font-medium text-[#6B7280] mb-1.5";
+const labelClass = "block text-[14px] font-medium text-[#6B7280] mb-1.5";
 
 export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
   const saved = loadSavedRoute();
@@ -126,7 +126,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label className={labelClass.replace("mb-1.5", "mb-0")}>Day</label>
-          <span className="text-[12px] text-[#9CA3AF]">
+          <span className="text-[13px] text-[#9CA3AF]">
             Today (HST): <span className="text-[#6B7280] font-medium">{ALL_DAYS[getHawaiiDayOfWeek()].label}</span>
           </span>
         </div>
@@ -136,7 +136,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
               key={day.value}
               type="button"
               onClick={() => setValues({ ...values, targetDay: day.value })}
-              className={`py-2 text-[12px] font-medium transition ${
+              className={`py-2 text-[13px] font-medium transition ${
                 i > 0 ? "border-l border-[#E5E7EB]" : ""
               } ${
                 values.targetDay === day.value
@@ -155,7 +155,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         <div className="flex items-center justify-between mb-1.5">
           <label className={labelClass.replace("mb-1.5", "mb-0")}>Departure window</label>
           {slotCount > 0 && (
-            <span className="text-[12px] text-[#9CA3AF]">
+            <span className="text-[13px] text-[#9CA3AF]">
               {slotCount} slot{slotCount !== 1 ? "s" : ""}
             </span>
           )}
@@ -168,7 +168,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             className={inputClass}
             required
           />
-          <span className="text-[#9CA3AF] text-[13px] shrink-0">to</span>
+          <span className="text-[#9CA3AF] text-[14px] shrink-0">to</span>
           <input
             type="time"
             value={values.endTime}
@@ -178,7 +178,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
           />
         </div>
         {slotWarning && (
-          <p className="text-[12px] text-[#B45309] mt-1.5">{slotWarning}</p>
+          <p className="text-[13px] text-[#B45309] mt-1.5">{slotWarning}</p>
         )}
       </div>
 
@@ -191,7 +191,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
               key={min}
               type="button"
               onClick={() => setValues({ ...values, intervalMinutes: min })}
-              className={`py-2 text-[13px] font-medium transition ${
+              className={`py-2 text-[14px] font-medium transition ${
                 i > 0 ? "border-l border-[#E5E7EB]" : ""
               } ${
                 values.intervalMinutes === min
@@ -215,7 +215,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
           className={inputClass}
           required
         />
-        <p className="text-[12px] text-[#9CA3AF] mt-1.5">
+        <p className="text-[13px] text-[#9CA3AF] mt-1.5">
           Slots after this time will be flagged as late risk.
         </p>
       </div>
@@ -224,7 +224,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
       <button
         type="submit"
         disabled={isLoading || !values.origin.trim() || !values.destination.trim()}
-        className="w-full h-11 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[14px] font-medium rounded-[6px] transition"
+        className="w-full h-11 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[15px] font-medium rounded-[6px] transition"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">

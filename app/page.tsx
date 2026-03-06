@@ -116,7 +116,7 @@ export default function HomePage() {
             It depends on when we leave.<br />
             Community-calibrated predictions using real commuter data.
           </p>
-          <p className="text-[12px] text-[#9CA3AF] mt-2">
+          <p className="text-[13px] text-[#9CA3AF] mt-2">
             Island-wide departure time modeling · School-aware calibration
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function HomePage() {
 
         {/* Error */}
         {error && (
-          <div className="border border-[#E5E7EB] rounded-[4px] px-4 py-3 text-[13px] text-[#B45309] bg-white mt-6">
+          <div className="border border-[#E5E7EB] rounded-[4px] px-4 py-3 text-[14px] text-[#B45309] bg-white mt-6">
             <span className="font-medium">Error:</span> {error}
           </div>
         )}
@@ -150,7 +150,7 @@ export default function HomePage() {
             {(() => {
               const schoolInfo = isTodaySchoolDay();
               return (
-                <div className="flex items-center gap-2 mb-5 text-[12px] text-[#6B7280]">
+                <div className="flex items-center gap-2 mb-5 text-[13px] text-[#6B7280]">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${schoolInfo.isSchoolDay ? "bg-[#2563EB]" : "bg-[#9CA3AF]"}`} />
                   {schoolInfo.isSchoolDay
                     ? "School day — school traffic patterns applied"
@@ -160,28 +160,28 @@ export default function HomePage() {
             })()}
 
             {/* Route summary */}
-            <div className="mb-5 text-[13px] text-[#6B7280] space-y-0.5">
+            <div className="mb-5 text-[14px] text-[#6B7280] space-y-0.5">
               <div className="flex items-center gap-2">
-                <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">From</span>
+                <span className="w-16 text-right text-[13px] font-medium text-[#9CA3AF]">From</span>
                 <span className="text-[#111827]">{result.origin}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">To</span>
+                <span className="w-16 text-right text-[13px] font-medium text-[#9CA3AF]">To</span>
                 <span className="text-[#111827]">{result.destination}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-16 text-right text-[12px] font-medium text-[#9CA3AF]">Goal</span>
+                <span className="w-16 text-right text-[13px] font-medium text-[#9CA3AF]">Goal</span>
                 <span className="text-[#111827]">{result.desiredArrival}</span>
               </div>
             </div>
 
             {/* Timeline header */}
-            <div className="flex items-center gap-4 py-2 border-b border-[#E5E7EB] mb-0 text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wide px-2 -mx-2">
-              <span className="w-[72px]">Depart</span>
-              <span className="w-[64px]">Travel</span>
+            <div className="flex items-center gap-4 py-2 border-b border-[#E5E7EB] mb-0 text-[12px] font-medium text-[#9CA3AF] uppercase tracking-wide px-2 -mx-2">
+              <span className="w-[80px]">Depart</span>
+              <span className="w-[72px]">Travel</span>
               <span className="flex-1">Arrives</span>
-              <span className="w-[96px] text-right">Buffer</span>
-              <span className="w-[72px] text-right">Status</span>
+              <span className="w-[100px] text-right">Buffer</span>
+              <span className="w-[80px] text-right">Status</span>
             </div>
 
             {/* Timeline rows */}
@@ -197,7 +197,7 @@ export default function HomePage() {
 
             {/* AI Pattern comment */}
             {aiComment && (
-              <div className="mt-6 text-[13px] text-[#6B7280] leading-relaxed border-l-2 border-[#E5E7EB] pl-4">
+              <div className="mt-6 text-[14px] text-[#6B7280] leading-relaxed border-l-2 border-[#E5E7EB] pl-4">
                 <span className="font-medium text-[#111827]">{aiComment.headline}</span>{" "}
                 {aiComment.detail}
               </div>
@@ -231,7 +231,7 @@ export default function HomePage() {
             })()}
 
             {/* Methodology note */}
-            <div className="mt-8 pt-6 border-t border-[#E5E7EB] text-[12px] text-[#9CA3AF] text-center">
+            <div className="mt-8 pt-6 border-t border-[#E5E7EB] text-[13px] text-[#9CA3AF] text-center">
               AlohaShift presents options — not prescriptions. The decision is always yours.
             </div>
 
@@ -242,13 +242,13 @@ export default function HomePage() {
         <div className="mt-16 pt-8 border-t border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="text-[14px] font-medium text-[#111827]">Help improve prediction accuracy</p>
-            <p className="text-[13px] text-[#6B7280] mt-0.5">
+            <p className="text-[14px] text-[#6B7280] mt-0.5">
               Submit real commute times · Community-powered · No account needed
             </p>
           </div>
           <Link
             href="/community"
-            className="shrink-0 text-[13px] font-medium text-[#2563EB] hover:text-[#1D4ED8] transition flex items-center gap-1"
+            className="shrink-0 text-[14px] font-medium text-[#2563EB] hover:text-[#1D4ED8] transition flex items-center gap-1"
           >
             Submit commute data →
           </Link>
